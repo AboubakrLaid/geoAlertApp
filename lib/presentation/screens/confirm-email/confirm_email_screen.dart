@@ -106,7 +106,6 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
         ),
       ),
       body: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
           child: Column(

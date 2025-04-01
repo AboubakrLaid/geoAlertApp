@@ -50,7 +50,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         height: MediaQuery.of(context).size.height,
         child: Center(
           child: SingleChildScrollView(
-            physics: AlwaysScrollableScrollPhysics(),
             child: Form(
               key: _formKey,
               child: Padding(

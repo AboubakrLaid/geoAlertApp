@@ -59,7 +59,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         height: MediaQuery.of(context).size.height,
         child: Center(
           child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
             child: Padding(
               padding: const EdgeInsets.only(left: 16, right: 16),
               child: Form(
