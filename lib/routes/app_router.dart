@@ -11,11 +11,13 @@ final GoRouter router = GoRouter(
   redirect: (context, state) async {
     final token = await LocalStorage.instance.getAccessToken();
 
+    // If no token and trying to access a restricted route, redirect to login
     if (token == null || token.isEmpty) {
-      if (state.fullPath != "/login") {
+      if (state.fullPath != "/login" && state.fullPath != "/register") {
         return "/login";
       }
     } else {
+      // If the user is authenticated, don't allow login or register access
       if (state.fullPath == "/login" || state.fullPath == "/register") {
         return "/home";
       }
@@ -23,7 +25,6 @@ final GoRouter router = GoRouter(
 
     return null; // No redirection needed
   },
-
   routes: [
     GoRoute(
       path: "/login",

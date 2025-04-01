@@ -105,70 +105,73 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
           label: const Text("Back", style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.w500)),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
-        child: Column(
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text("Almost There", style: TextStyle(color: Color.fromRGBO(25, 25, 25, 1), fontWeight: FontWeight.w700, fontSize: 28, fontFamily: 'Titillium Web')),
-                const SizedBox(height: 24),
-                Text.rich(
-                  TextSpan(
-                    text: "Please enter the 6-digit code sent to your email ",
-                    style: const TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w300, fontSize: 16, height: 1.0, letterSpacing: 0),
-                    children: [
-                      TextSpan(text: widget.email, style: const TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w700, fontSize: 16, height: 1.0, letterSpacing: 0)),
-                      const TextSpan(text: " for verification.", style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w300, fontSize: 16, height: 1.0, letterSpacing: 0)),
-                    ],
+      body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 64, 16, 0),
+          child: Column(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Almost There", style: TextStyle(color: Color.fromRGBO(25, 25, 25, 1), fontWeight: FontWeight.w700, fontSize: 28, fontFamily: 'Titillium Web')),
+                  const SizedBox(height: 24),
+                  Text.rich(
+                    TextSpan(
+                      text: "Please enter the 6-digit code sent to your email ",
+                      style: const TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w300, fontSize: 16, height: 1.0, letterSpacing: 0),
+                      children: [
+                        TextSpan(text: widget.email, style: const TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w700, fontSize: 16, height: 1.0, letterSpacing: 0)),
+                        const TextSpan(text: " for verification.", style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w300, fontSize: 16, height: 1.0, letterSpacing: 0)),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 32),
-            Column(
-              children: [
-                OtpTextField(
-                  onChanged: (code) {
-                    setState(() {
-                      _otpCode = code;
-                    });
-                  },
-                ),
-                const SizedBox(height: 40),
-                CustomElevatedButton(
-                  text: "Verify",
-                  textStyle: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: Colors.white),
-                  onPressed: emailVerificationState.isLoading ? null : _verifyEmail,
-                ),
-                const SizedBox(height: 48),
-                RichText(
-                  text: TextSpan(
-                    text: "Didn’t receive any code? ",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black),
-                    children: [
-                      TextSpan(
-                        text: "Resend code",
-                        style: TextStyle(
-                          color:
-                              _resendCooldown > 0
-                                  ? Colors
-                                      .grey
-                                      .shade400 // Disabled color
-                                  : const Color.fromRGBO(220, 9, 26, 1), // Active color
-                          fontWeight: FontWeight.bold,
+                ],
+              ),
+              const SizedBox(height: 32),
+              Column(
+                children: [
+                  OtpTextField(
+                    onChanged: (code) {
+                      setState(() {
+                        _otpCode = code;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 40),
+                  CustomElevatedButton(
+                    text: "Verify",
+                    textStyle: const TextStyle(fontSize: 21, fontWeight: FontWeight.w700, color: Colors.white),
+                    onPressed: emailVerificationState.isLoading ? null : _verifyEmail,
+                  ),
+                  const SizedBox(height: 48),
+                  RichText(
+                    text: TextSpan(
+                      text: "Didn’t receive any code? ",
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Colors.black),
+                      children: [
+                        TextSpan(
+                          text: "Resend code",
+                          style: TextStyle(
+                            color:
+                                _resendCooldown > 0
+                                    ? Colors
+                                        .grey
+                                        .shade400 // Disabled color
+                                    : const Color.fromRGBO(220, 9, 26, 1), // Active color
+                            fontWeight: FontWeight.bold,
+                          ),
+                          recognizer: _resendCooldown > 0 ? null : (TapGestureRecognizer()..onTap = _resendCode),
                         ),
-                        recognizer: _resendCooldown > 0 ? null : (TapGestureRecognizer()..onTap = _resendCode),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                if (_resendCooldown > 0) Text("Resend available in $_resendCooldown s", style: const TextStyle(fontSize: 14, color: Colors.grey)),
-              ],
-            ),
-          ],
+                  const SizedBox(height: 8),
+                  if (_resendCooldown > 0) Text("Resend available in $_resendCooldown s", style: const TextStyle(fontSize: 14, color: Colors.grey)),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
