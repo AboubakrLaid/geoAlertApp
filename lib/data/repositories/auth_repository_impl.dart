@@ -14,9 +14,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<AuthTokens?> login(String email, String password) async {
-    print("Login called with email: $email and password: $password");
-    
-
     try {
       final response = await _apiClient.post('/ms-auth/api/auth/login', {"email": email, "password": password});
       if (response.statusCode == 200) {
@@ -25,31 +22,22 @@ class AuthRepositoryImpl implements AuthRepository {
         throw response.data["message"];
       }
     } catch (e) {
-      print("Error during login: $e");
       rethrow;
     }
   }
 
   @override
-  Future<User?> register(String firstName, String lastName, String email, String phoneNumber, String password) async{
-    
+  Future<User?> register(String firstName, String lastName, String email, String phoneNumber, String password) async {
+    try {
+      final response = await _apiClient.post('/ms-auth/api/auth/register', {"firstName": firstName, "lastName": lastName, "email": email, "phoneNumber": phoneNumber, "password": password});
 
-  try {
-    final response = await _apiClient.post('/ms-auth/api/auth/register', {
-      "firstName": firstName,
-      "lastName": lastName,
-      "email": email,
-      "phoneNumber": phoneNumber,
-      "password": password,
-    });
-  
-    if (response.statusCode == 200) {
-      return UserModel.fromJson(response.data);
-    } else {
-      throw response.data["message"]; 
+      if (response.statusCode == 200) {
+        return UserModel.fromJson(response.data);
+      } else {
+        throw response.data["message"];
+      }
+    } catch (e) {
+      rethrow;
     }
-  } catch (e) {
-    rethrow;
-  }
   }
 }

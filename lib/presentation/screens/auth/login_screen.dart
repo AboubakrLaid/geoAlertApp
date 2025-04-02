@@ -5,6 +5,7 @@ import 'package:geoalert/presentation/providers/auth_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/presentation/widgets/custom_text_field.dart';
+import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -22,8 +23,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _login() {
     if (_formKey.currentState!.validate()) {
-      ref.read(authNotifierProvider.notifier).login(_emailController.text.trim(), _passwordController.text.trim());
-      GoRouter.of(context).go("/home");
+      ref.read(authNotifierProvider.notifier).login(_emailController.text.trim(), _passwordController.text.trim()).whenComplete(() {
+        final bool loginSucceded = !ref.read(authNotifierProvider).hasError;
+        if (loginSucceded) {
+          GoRouter.of(context).go(Routes.home);
+        }
+      });
     }
   }
 
@@ -33,10 +38,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (next.hasError) {
         final errorMessage = next.error.toString().toLowerCase();
 
+        _passwordController.clear();
+        _emailController.clear();
         CustomSnackBar.show(context, message: errorMessage);
 
         if (errorMessage.contains("please verify your email before logging in".toLowerCase())) {
-          GoRouter.of(context).push('/confirm-email', extra: _emailController.text.trim());
+          GoRouter.of(context).push(Routes.confirmEmail, extra: _emailController.text.trim());
         }
       }
     });
@@ -114,8 +121,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                       TapGestureRecognizer()
                                         ..onTap = () {
                                           ref.read(authNotifierProvider.notifier).resetState();
-                                          GoRouter.of(context).go('/register');
-                                          print("Register now tapped");
+                                          GoRouter.of(context).go(Routes.register);
                                         },
                                 ),
                               ],

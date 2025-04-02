@@ -7,6 +7,7 @@ import 'package:geoalert/presentation/providers/email_verification_provider.dart
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/presentation/widgets/otp_text_field.dart';
+import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
 
 class ConfirmEmailScreen extends ConsumerStatefulWidget {
@@ -61,7 +62,7 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
 
     await emailVerificationNotifier.verifyEmail(email: widget.email, code: _otpCode);
     if (!ref.read(emailVerificationProvider).hasError) {
-      GoRouter.of(context).push('/login', extra: widget.email);
+      GoRouter.of(context).push(Routes.login, extra: widget.email);
     }
   }
 

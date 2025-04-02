@@ -1,22 +1,23 @@
 import 'package:dio/dio.dart';
 import 'package:geoalert/config/app_config.dart';
-import 'dart:io';
 
 import 'package:geoalert/core/network/network_checker.dart';
 
 class ApiClient {
   final NetworkChecker _networkChecker = NetworkChecker();
-  final Dio _dio = Dio(BaseOptions(
-    baseUrl: AppConfig.baseUrl,
-    connectTimeout: const Duration(seconds: 30),
-    receiveTimeout: const Duration(seconds: 30),
-    validateStatus: (status) {
-      return true; // Allows all status codes to be returned instead of throwing exceptions
-    },
-  ));
+  final Dio _dio = Dio(
+    BaseOptions(
+      baseUrl: AppConfig.baseUrl,
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+      validateStatus: (status) {
+        return true; // Allows all status codes to be returned instead of throwing exceptions
+      },
+    ),
+  );
 
   Future<Response> post(String path, dynamic data) async {
-    if (! await _networkChecker.hasInternetConnection()){
+    if (!await _networkChecker.hasInternetConnection()) {
       throw ApiException("No internet connection. Please check your network.");
     }
     try {
@@ -28,7 +29,6 @@ class ApiClient {
     }
   }
 
-  
   ApiException _handleDioError(DioException e) {
     if (e.type == DioExceptionType.connectionError) {
       return ApiException("Could not connect to the server. Please try again later.");
@@ -41,7 +41,6 @@ class ApiClient {
     }
   }
 }
-
 
 class ApiException implements Exception {
   final String message;

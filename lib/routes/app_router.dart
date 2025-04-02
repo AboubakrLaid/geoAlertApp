@@ -3,57 +3,46 @@ import 'package:geoalert/presentation/screens/auth/login_screen.dart';
 import 'package:geoalert/presentation/screens/auth/register_screen.dart';
 import 'package:geoalert/presentation/screens/confirm-email/confirm_email_screen.dart';
 import 'package:geoalert/presentation/screens/home/home_screen.dart';
+import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
 
-final GoRouter router = GoRouter(
-  initialLocation: "/login", // Default path
+class AppRouter {
+  final String initialLocation;
 
-  redirect: (context, state) async {
-    final token = await LocalStorage.instance.getAccessToken();
+  AppRouter({required this.initialLocation});
 
-    // If no token and trying to access a restricted route, redirect to login
-    if (token == null || token.isEmpty) {
-      if (state.fullPath != "/login" && state.fullPath != "/register") {
-        return "/login";
-      }
-    } else {
-      // If the user is authenticated, don't allow login or register access
-      if (state.fullPath == "/login" || state.fullPath == "/register") {
-        return "/home";
-      }
-    }
-
-    return null; // No redirection needed
-  },
-  routes: [
-    GoRoute(
-      path: "/login",
-      builder: (context, state) {
-        final email = state.extra as String? ?? '';
-        return LoginScreen(email: email);
-      },
-    ),
-
-    GoRoute(
-      path: "/register",
-      builder: (context, state) {
-        return RegisterScreen();
-      },
-    ),
-
-    GoRoute(
-      path: '/confirm-email',
-      builder: (context, state) {
-        final email = state.extra as String? ?? '';
-        return ConfirmEmailScreen(email: email);
-      },
-    ),
-
-    GoRoute(
-      path: "/home",
-      builder: (context, state) {
-        return HomeScreen();
-      },
-    ),
-  ],
-);
+  GoRouter get router {
+    return GoRouter(
+      initialLocation: initialLocation,
+      debugLogDiagnostics: true,
+      routes: [
+        GoRoute(
+          path: Routes.login,
+          builder: (context, state) {
+            final email = state.extra as String? ?? '';
+            return LoginScreen(email: email);
+          },
+        ),
+        GoRoute(
+          path: Routes.register,
+          builder: (context, state) {
+            return RegisterScreen();
+          },
+        ),
+        GoRoute(
+          path: Routes.confirmEmail,
+          builder: (context, state) {
+            final email = state.extra as String? ?? '';
+            return ConfirmEmailScreen(email: email);
+          },
+        ),
+        GoRoute(
+          path: Routes.home,
+          builder: (context, state) {
+            return HomeScreen();
+          },
+        ),
+      ],
+    );
+  }
+}

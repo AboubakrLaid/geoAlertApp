@@ -5,6 +5,7 @@ import 'package:geoalert/presentation/providers/auth_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/presentation/widgets/custom_text_field.dart';
+import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -38,7 +39,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
 
       if (!ref.read(authNotifierProvider).hasError) {
-        context.push('/confirm-email', extra: email);
+        GoRouter.of(context).go(Routes.confirmEmail, extra: email);
       }
     }
   }
@@ -124,7 +125,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   TapGestureRecognizer()
                                     ..onTap = () {
                                       ref.read(authNotifierProvider.notifier).resetState();
-                                      GoRouter.of(context).go('/login');
+                                      GoRouter.of(context).go(Routes.login);
                                     },
                             ),
                           ],

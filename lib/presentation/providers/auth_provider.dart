@@ -30,10 +30,7 @@ final authStateProvider = StateProvider<User?>((ref) => null);
 
 // Auth Notifier
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AuthTokens?>>((ref) {
-  return AuthNotifier(
-    ref.read(loginUseCaseProvider),
-    ref.read(registerUseCaseProvider),
-  );
+  return AuthNotifier(ref.read(loginUseCaseProvider), ref.read(registerUseCaseProvider));
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
@@ -42,14 +39,12 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
 
   AuthNotifier(this._loginUseCase, this._registerUseCase) : super(const AsyncValue.data(null));
 
-
-  
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
     try {
       final tokens = await _loginUseCase.execute(email, password);
       state = AsyncValue.data(tokens);
-      if(tokens != null){
+      if (tokens != null) {
         await LocalStorage.instance.setAccessToken(tokens.accessToken);
         await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
       }
@@ -58,32 +53,18 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
     }
   }
 
-  Future<void> register({
-    required String firstName,
-    required String lastName,
-    required String email,
-    required String phoneNumber,
-    required String password,
-  }) async {
+  Future<void> register({required String firstName, required String lastName, required String email, required String phoneNumber, required String password}) async {
     state = const AsyncValue.loading();
     try {
-      final user = await _registerUseCase.execute(
-        firstName: firstName,
-        lastName: lastName,
-        email: email,
-        phoneNumber: phoneNumber,
-        password: password,
-      );
+      final user = await _registerUseCase.execute(firstName: firstName, lastName: lastName, email: email, phoneNumber: phoneNumber, password: password);
       state = const AsyncValue.data(null);
     } catch (e) {
       state = AsyncValue.error(e.toString(), StackTrace.current);
     }
   }
 
-   // ✅ Reset the authentication state
+  // ✅ Reset the authentication state
   void resetState() {
     state = const AsyncValue.data(null);
   }
-
-  
 }
