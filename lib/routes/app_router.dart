@@ -1,4 +1,3 @@
-import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/presentation/screens/auth/login_screen.dart';
 import 'package:geoalert/presentation/screens/auth/register_screen.dart';
 import 'package:geoalert/presentation/screens/confirm-email/confirm_email_screen.dart';
