@@ -30,17 +30,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     if (_formKey.currentState!.validate()) {
       final email = _emailController.text.trim();
 
-      await authNotifier.register(
-        firstName: _firstNameController.text.trim(),
-        lastName: _lastNameController.text.trim(),
-        email: email,
-        phoneNumber: _phoneController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
-
-      if (!ref.read(authNotifierProvider).hasError) {
-        GoRouter.of(context).go(Routes.confirmEmail, extra: email);
-      }
+      await authNotifier
+          .register(
+            firstName: _firstNameController.text.trim(),
+            lastName: _lastNameController.text.trim(),
+            email: email,
+            phoneNumber: _phoneController.text.trim(),
+            password: _passwordController.text.trim(),
+          )
+          .whenComplete(() {
+            final bool registerSucceded = !ref.read(authNotifierProvider).hasError;
+            if (registerSucceded) {
+              GoRouter.of(context).go(Routes.confirmEmail, extra: email);
+            }
+          });
     }
   }
 

@@ -7,14 +7,12 @@ import 'package:geoalert/domain/usecases/login_usecase.dart';
 import 'package:geoalert/domain/usecases/register_usecase.dart';
 import 'package:geoalert/data/repositories/auth_repository_impl.dart';
 import 'package:geoalert/core/network/api_client.dart';
-import 'package:geoalert/core/network/network_checker.dart';
 
 // Dependency Injection
 final apiClientProvider = Provider((ref) => ApiClient());
-final networkCheckerProvider = Provider((ref) => NetworkChecker());
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepositoryImpl(ref.read(apiClientProvider), ref.read(networkCheckerProvider));
+  return AuthRepositoryImpl(ref.read(apiClientProvider));
 });
 
 final loginUseCaseProvider = Provider((ref) {
@@ -49,6 +47,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
         await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
       }
     } catch (e) {
+      print("Auth Notifier Error: $e");
       state = AsyncValue.error(e.toString(), StackTrace.current);
     }
   }

@@ -21,12 +21,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  void _login() {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      ref.read(authNotifierProvider.notifier).login(_emailController.text.trim(), _passwordController.text.trim()).whenComplete(() {
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      await ref.read(authNotifierProvider.notifier).login(email, password).whenComplete(() {
         final bool loginSucceded = !ref.read(authNotifierProvider).hasError;
+
         if (loginSucceded) {
           GoRouter.of(context).go(Routes.home);
+        } else {
+          final errorMessage = ref.read(authNotifierProvider).error.toString().toLowerCase();
+          CustomSnackBar.show(context, message: errorMessage);
+          if (errorMessage.contains("please verify your email before logging in".toLowerCase())) {
+            GoRouter.of(context).push(Routes.confirmEmail, extra: email);
+          }
         }
       });
     }
@@ -34,19 +43,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(authNotifierProvider, (previous, next) {
-      if (next.hasError) {
-        final errorMessage = next.error.toString().toLowerCase();
+    // ref.listen(authNotifierProvider, (previous, next) {
+    //   if (next.hasError) {
+    //     final errorMessage = next.error.toString().toLowerCase();
 
-        _passwordController.clear();
-        _emailController.clear();
-        CustomSnackBar.show(context, message: errorMessage);
-
-        if (errorMessage.contains("please verify your email before logging in".toLowerCase())) {
-          GoRouter.of(context).push(Routes.confirmEmail, extra: _emailController.text.trim());
-        }
-      }
-    });
+    //     // _passwordController.clear();
+    //     print("I am here");
+    //     CustomSnackBar.show(context, message: errorMessage);
+    //     if (errorMessage.contains("please verify your email before logging in".toLowerCase())) {
+    //       GoRouter.of(context).push(Routes.confirmEmail, extra: _emailController.text.trim());
+    //     }
+    //   }
+    // });
 
     final authState = ref.watch(authNotifierProvider);
 

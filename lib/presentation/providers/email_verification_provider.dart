@@ -4,30 +4,19 @@ import 'package:geoalert/domain/repositories/email_verification_repository.dart'
 import 'package:geoalert/domain/usecases/confirm_email_usecase.dart';
 import 'package:geoalert/presentation/providers/auth_provider.dart';
 
+final emailVerificationRepositoryProvider = Provider<EmailVerificationRepository>((ref) {
+  final apiClient = ref.read(apiClientProvider);
+  return EmailVerificationRepositoryImpl(apiClient);
+});
 
-final emailVerificationRepositoryProvider = Provider<EmailVerificationRepository>(
-  (ref) {
-    final apiClient = ref.read(apiClientProvider);
-    final networkChecker = ref.read(networkCheckerProvider);
-    return EmailVerificationRepositoryImpl(apiClient, networkChecker);
-  },
-);
+final confirmEmailUseCaseProvider = Provider<ConfirmEmailUseCase>((ref) => ConfirmEmailUseCase(ref.read(emailVerificationRepositoryProvider)));
 
-
-final confirmEmailUseCaseProvider = Provider<ConfirmEmailUseCase>(
-  (ref) => ConfirmEmailUseCase(ref.read(emailVerificationRepositoryProvider)),
-);
-
-final emailVerificationProvider =
-    StateNotifierProvider<EmailVerificationNotifier, AsyncValue<void>>(
-  (ref) => EmailVerificationNotifier(ref.read(confirmEmailUseCaseProvider)),
-);
+final emailVerificationProvider = StateNotifierProvider<EmailVerificationNotifier, AsyncValue<void>>((ref) => EmailVerificationNotifier(ref.read(confirmEmailUseCaseProvider)));
 
 class EmailVerificationNotifier extends StateNotifier<AsyncValue<void>> {
   final ConfirmEmailUseCase _confirmEmailUseCase;
 
-  EmailVerificationNotifier(this._confirmEmailUseCase)
-      : super(const AsyncValue.data(null));
+  EmailVerificationNotifier(this._confirmEmailUseCase) : super(const AsyncValue.data(null));
 
   Future<void> verifyEmail({required String email, required String code}) async {
     state = const AsyncValue.loading();
