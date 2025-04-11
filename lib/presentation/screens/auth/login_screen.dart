@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geoalert/presentation/providers/auth_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
+import 'package:geoalert/presentation/widgets/custom_image.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/presentation/widgets/custom_text_field.dart';
 import 'package:geoalert/routes/routes.dart';
@@ -72,7 +73,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 57), child: SizedBox(height: 251, child: Image(image: AssetImage("assets/images/login.jpeg"), fit: BoxFit.fill))),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 57), child: CustomImage(height: 251, imageUrl: "assets/images/login.jpeg")),
                     Column(
                       children: [
                         Text("Welcome Back", style: TextStyle(color: Color.fromRGBO(25, 25, 25, 1), fontWeight: FontWeight.w700, fontSize: 28, fontFamily: 'Titillium Web')),

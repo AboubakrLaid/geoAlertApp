@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geoalert/presentation/providers/auth_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
+import 'package:geoalert/presentation/widgets/custom_image.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/presentation/widgets/custom_text_field.dart';
 import 'package:geoalert/routes/routes.dart';
@@ -23,6 +24,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  String? selectedOperator;
 
   Future<void> _register() async {
     final authNotifier = ref.read(authNotifierProvider.notifier);
@@ -82,21 +84,56 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                     // Form Fields
                     CustomTextField(controller: _firstNameController, hintText: "First Name", validator: (value) => value!.isEmpty ? "Enter your first name" : null),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     CustomTextField(controller: _lastNameController, hintText: "Last Name", validator: (value) => value!.isEmpty ? "Enter your last name" : null),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     CustomTextField(controller: _emailController, hintText: "Email", suffixIcon: Icons.email_outlined, validator: (value) => value!.contains("@") ? null : "Enter a valid email"),
-                    const SizedBox(height: 10),
-                    CustomTextField(controller: _phoneController, hintText: "Phone Number", suffixIcon: Icons.phone, validator: (value) => value!.isEmpty ? "Enter your phone number" : null),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
+
+                    DropdownButtonFormField<String>(
+                      icon: const Icon(Icons.keyboard_arrow_down),
+                      hint: const Text("Select a career", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400)),
+                      decoration: const InputDecoration(labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w400), border: OutlineInputBorder(borderSide: BorderSide.none)),
+                      value: selectedOperator,
+                      items: const [DropdownMenuItem(value: "07", child: Text("Djezzy")), DropdownMenuItem(value: "06", child: Text("Mobilis")), DropdownMenuItem(value: "05", child: Text("Ooredoo"))],
+                      onChanged: (value) {
+                        if (value != null) {
+                          selectedOperator = value;
+                          final oldPhone = _phoneController.text;
+
+                          // Replace existing prefix if it's already set
+                          if (oldPhone.startsWith("07") || oldPhone.startsWith("06") || oldPhone.startsWith("05")) {
+                            _phoneController.text = value + oldPhone.substring(2);
+                          } else {
+                            _phoneController.text = value;
+                          }
+                        }
+                      },
+                    ),
+
+                    const SizedBox(height: 14),
+                    CustomTextField(
+                      controller: _phoneController,
+                      hintText: "Phone Number",
+
+                      suffixIcon: Icons.phone_android_outlined,
+                      validator: (value) {
+                        if (selectedOperator == null) return "Please select a career first";
+                        if (value == null || value.length < 9) return "Enter a valid phone number";
+                        if (!value.startsWith(selectedOperator!)) return "Number must start with $selectedOperator";
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 14),
                     CustomTextField(
                       controller: _passwordController,
                       hintText: "Password",
                       suffixIcon: Icons.lock_outline,
                       obscureText: true,
-                      validator: (value) => value!.length < 6 ? "Password must be at least 6 characters" : null,
+                      validator: (value) => value!.length < 8 ? "Password must be at least 8 characters" : null,
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
                     CustomTextField(
                       controller: _confirmPasswordController,
                       hintText: "Confirm Password",
