@@ -7,6 +7,7 @@ import 'package:geoalert/domain/usecases/login_usecase.dart';
 import 'package:geoalert/domain/usecases/register_usecase.dart';
 import 'package:geoalert/data/repositories/auth_repository_impl.dart';
 import 'package:geoalert/core/network/api_client.dart';
+import 'package:geoalert/presentation/providers/user_profile_provider.dart';
 
 // Dependency Injection
 final apiClientProvider = Provider((ref) => ApiClient());
@@ -28,14 +29,15 @@ final authStateProvider = StateProvider<User?>((ref) => null);
 
 // Auth Notifier
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AsyncValue<AuthTokens?>>((ref) {
-  return AuthNotifier(ref.read(loginUseCaseProvider), ref.read(registerUseCaseProvider));
+  return AuthNotifier(ref.read(loginUseCaseProvider), ref.read(registerUseCaseProvider), ref);
 });
 
 class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
+  final Ref _ref;
 
-  AuthNotifier(this._loginUseCase, this._registerUseCase) : super(const AsyncValue.data(null));
+  AuthNotifier(this._loginUseCase, this._registerUseCase, this._ref) : super(const AsyncValue.data(null));
 
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
@@ -45,6 +47,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
       if (tokens != null) {
         await LocalStorage.instance.setAccessToken(tokens.accessToken);
         await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
+
+        await _ref.read(userNotifierProvider.notifier).fetchUser();
       }
     } catch (e) {
       print("Auth Notifier Error: $e");

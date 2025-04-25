@@ -31,7 +31,6 @@ class ApiClient {
     }
 
     try {
-      print(_dio.options.headers);
       return await _dio.post(path, data: data);
     } on DioException catch (e) {
       throw _handleDioError(e);
