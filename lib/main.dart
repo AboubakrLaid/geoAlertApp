@@ -16,6 +16,7 @@ import 'package:geoalert/data/repositories/location_update_settings_repository_i
 import 'package:geoalert/domain/entities/location_update_settings.dart';
 import 'package:geoalert/domain/usecases/fetch_location_update_frequency_usecase.dart';
 import 'package:geoalert/domain/usecases/send_current_location_usecase.dart';
+import 'package:geoalert/firebase_options.dart';
 import 'package:geoalert/presentation/screens/home/home_screen.dart';
 import 'package:geoalert/presentation/util/dialog_util.dart';
 import 'package:geoalert/presentation/util/location_service_listener.dart';
@@ -95,10 +96,10 @@ void onStart(ServiceInstance service) async {
       if (remainingDelay > 0) {
         await Future.delayed(Duration(seconds: remainingDelay));
       } else {
-        print('Cycle took longer than frequency ($elapsedSeconds > $frequency)');
+        // print('Cycle took longer than frequency ($elapsedSeconds > $frequency)');
       }
     } catch (e, st) {
-      print('Service error: $e\n$st');
+      // print('Service error: $e\n$st');
       await Future.delayed(Duration(seconds: 10));
     }
   }
@@ -139,6 +140,8 @@ void main() async {
   if (accessToken != null && accessToken.isNotEmpty) {
     await initializeService();
   }
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await NotificationService.instance.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -167,7 +170,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final isRunning = await FlutterBackgroundService().isRunning();
-      print('Background service running: $isRunning');
+      // print('Background service running: $isRunning');
     });
   }
 
