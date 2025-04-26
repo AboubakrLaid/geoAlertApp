@@ -17,7 +17,7 @@ class ApiInterceptor extends Interceptor {
     print("I am in onError");
     print("path : ${err.requestOptions.path}");
     const List<String> authPaths = ['/ms-auth/api/auth/login', '/ms-auth/api/auth/register', '/ms-auth/api/auth/refresh-token'];
-    print(!authPaths.contains(err.requestOptions.path));
+
     if (err.response?.statusCode == 401 && !authPaths.contains(err.requestOptions.path)) {
       print("onError: 401 Unauthorized");
 

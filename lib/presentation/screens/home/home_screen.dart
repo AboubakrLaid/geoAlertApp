@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
+import 'package:geoalert/data/repositories/location_update_settings_repository_impl.dart';
+import 'package:geoalert/domain/usecases/send_current_location_usecase.dart';
 import 'package:geoalert/presentation/providers/location_update_provider.dart';
 import 'package:geoalert/presentation/providers/test_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/routes/routes.dart';
+import 'package:geoalert/services/background_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -22,15 +26,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _callProtected() {
-    ref.read(testProvider.notifier).callProtected().whenComplete(() {
+    ref.read(testProvider.notifier).callProtected().whenComplete(() async {
       final errorMessage = ref.read(testProvider).error.toString().toLowerCase();
       if (errorMessage.contains("Unauthorized. Please log in again.".toLowerCase())) {
         GoRouter.of(context).go(Routes.login);
+        await BackgroundServiceManager().stopService();
       }
     });
   }
 
-  void _getLocationFrequency() {
+  void _getLocationFrequency() async {
     ref.read(locationUpdateNotifierProvider.notifier).loadFrequency();
   }
 
@@ -118,5 +123,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+}
+
+Future<bool> sendLocationInBackground() async {
+  try {
+    final apiClient = ApiClient(); // Manually instantiate
+    final repo = LocationUpdateSettingsRepositoryImpl(apiClient);
+    final usecase = SendCurrentLocationUseCase(repo);
+
+    final userId = await LocalStorage.instance.getUserId();
+    if (userId == null) throw Exception("User ID is null");
+
+    final position = await Geolocator.getCurrentPosition();
+    await usecase.execute(userId: userId, latitude: position.latitude, longitude: position.longitude);
+
+    print("✅ Location sent in background");
+    return true;
+  } catch (e) {
+    print("❌ Failed to send location in background: $e");
+    return false;
   }
 }
