@@ -6,24 +6,37 @@ class BackgroundServiceManager {
   factory BackgroundServiceManager() => _instance;
   BackgroundServiceManager._internal();
 
-  Future<void> startService() async {
-    final service = FlutterBackgroundService();
-    if (!(await service.isRunning())) {
-      await initializeService();
-      await service.startService();
-    }
-  }
-
-  Future<void> stopService() async {
+  Future<void> _ensureServiceStopped() async {
     final service = FlutterBackgroundService();
     if (await service.isRunning()) {
       service.invoke("stopService");
+      // Wait for service to fully stop
+      await Future.delayed(const Duration(seconds: 2));
+      try {
+        // await service.stopBackgroundService();
+      } catch (e) {
+        print("Error stopping service: $e");
+      }
     }
+  }
+
+  Future<void> startService() async {
+    await _ensureServiceStopped();
+
+    // Initialize fresh service
+    await initializeService();
+
+    final service = FlutterBackgroundService();
+    await service.startService();
+  }
+
+  Future<void> stopService() async {
+    await _ensureServiceStopped();
   }
 
   Future<void> restartService() async {
     await stopService();
-    await Future.delayed(Duration(seconds: 1)); // Ensure clean stop
+    await Future.delayed(const Duration(seconds: 1));
     await startService();
   }
 }

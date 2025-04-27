@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/routes/routes.dart';
 import 'package:geoalert/services/background_service.dart';
@@ -15,7 +16,13 @@ class ProfilePage extends StatelessWidget {
         // Proceed with logout actions after user acknowledges the warning
         await LocalStorage.instance.setAccessToken('');
         await LocalStorage.instance.setRefreshToken('');
-        await BackgroundServiceManager().stopService();
+        final service = FlutterBackgroundService();
+        if (await service.isRunning()) {
+          service.invoke("stopService");
+        }
+
+        final manager = BackgroundServiceManager();
+        await manager.stopService();
         GoRouter.of(context).go(Routes.login);
       });
     }

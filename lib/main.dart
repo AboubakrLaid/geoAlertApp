@@ -27,10 +27,15 @@ import 'routes/routes.dart';
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
+  if (await service.isRunning()) {
+    service.invoke("stopService");
+    await Future.delayed(Duration(seconds: 1)); // Ensure clean stop
+  }
+
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
-      autoStart: true,
+      autoStart: false,
       isForegroundMode: true,
       notificationChannelId: 'my_foreground',
       initialNotificationTitle: 'GeoAlert Service Running',
@@ -46,6 +51,7 @@ Future<void> initializeService() async {
 
 @pragma('vm:entry-point')
 void onStart(ServiceInstance service) async {
+  WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
   final apiClient = ApiClient();
@@ -74,14 +80,13 @@ void onStart(ServiceInstance service) async {
 
       // 2. Execute parallel operations with timeouts
       final results = await Future.wait([geoLocator.getCurrentPosition(), getFrequencyUseCase.execute().timeout(Duration(seconds: 10))]);
-
       final position = results[0] as geo.Position;
       final settings = results[1] as LocationUpdateSettings?;
       final frequency = settings?.frequency ?? 10;
 
       // 3. Fire-and-forget the location send (don't wait for completion)
       unawaited(sendLocationUseCase.execute(userId: userId, latitude: position.latitude, longitude: position.longitude).catchError((e) => print('Send location error: $e')));
-
+      print('Location sent: ${position.latitude}, ${position.longitude}');
       // 4. Update notification
       if (service is AndroidServiceInstance) {
         service.setForegroundNotificationInfo(title: "GeoAlert Service", content: "Updated at ${DateTime.now().toLocal()}");

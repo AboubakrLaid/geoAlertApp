@@ -13,7 +13,9 @@
 
         <!-- Background Service -->
         <service android:name="id.flutter.flutter_background_service.BackgroundService" android:enabled="true" android:exported="false" tools:replace="android:exported" android:foregroundServiceType="location"/>
+        <service android:name="com.transistorsoft.flutter.backgroundfetch.HeadlessTask" android:enabled="true" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
 
+        <service android:name="com.transistorsoft.flutter.backgroundfetch.BackgroundFetchService" android:permission="android.permission.BIND_JOB_SERVICE" />
         <!-- Notification Channel Metadata -->
         <meta-data android:name="flutter_background_plugin_channel_id" android:value="my_foreground"/>
         <!-- Must match your notificationChannelId -->
