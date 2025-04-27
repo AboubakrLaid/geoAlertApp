@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:geoalert/config/app_theme.dart';
 import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
@@ -17,7 +16,6 @@ import 'package:geoalert/domain/entities/location_update_settings.dart';
 import 'package:geoalert/domain/usecases/fetch_location_update_frequency_usecase.dart';
 import 'package:geoalert/domain/usecases/send_current_location_usecase.dart';
 import 'package:geoalert/firebase_options.dart';
-import 'package:geoalert/presentation/screens/home/home_screen.dart';
 import 'package:geoalert/presentation/util/dialog_util.dart';
 import 'package:geoalert/presentation/util/location_service_listener.dart';
 import 'package:geoalert/routes/app_router.dart';
@@ -98,7 +96,7 @@ void onStart(ServiceInstance service) async {
       } else {
         // print('Cycle took longer than frequency ($elapsedSeconds > $frequency)');
       }
-    } catch (e, st) {
+    } catch (e) {
       // print('Service error: $e\n$st');
       await Future.delayed(Duration(seconds: 10));
     }
@@ -167,10 +165,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _locationServiceListener.start();
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final isRunning = await FlutterBackgroundService().isRunning();
-      // print('Background service running: $isRunning');
     });
   }
 

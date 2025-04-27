@@ -24,6 +24,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _login() async {
     if (_formKey.currentState!.validate()) {
+      FocusScope.of(context).unfocus();
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
       await ref.read(authNotifierProvider.notifier).login(email, password).whenComplete(() {

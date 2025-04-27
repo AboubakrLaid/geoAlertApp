@@ -8,7 +8,6 @@ import 'package:geoalert/domain/usecases/login_usecase.dart';
 import 'package:geoalert/domain/usecases/register_usecase.dart';
 import 'package:geoalert/data/repositories/auth_repository_impl.dart';
 import 'package:geoalert/core/network/api_client.dart';
-import 'package:geoalert/main.dart';
 import 'package:geoalert/presentation/providers/user_profile_provider.dart';
 import 'package:geoalert/services/background_service.dart';
 
@@ -46,7 +45,6 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
     state = const AsyncValue.loading();
     try {
       final tokens = await _loginUseCase.execute(email, password);
-      state = AsyncValue.data(tokens);
       if (tokens != null) {
         await LocalStorage.instance.setAccessToken(tokens.accessToken);
         await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
@@ -61,6 +59,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
         // 3. Reinitialize and start fresh service
         await BackgroundServiceManager().restartService();
       }
+      state = AsyncValue.data(tokens);
     } catch (e) {
       print("Auth Notifier Error: $e");
       state = AsyncValue.error(e.toString(), StackTrace.current);
