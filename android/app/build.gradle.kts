@@ -21,7 +21,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.geoalert"
-        minSdk = flutter.minSdkVersion.toInt()
+        // minSdk = flutter.minSdkVersion.toInt()
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion.toInt()
         versionCode = flutter.versionCode.toInt()
         versionName = flutter.versionName

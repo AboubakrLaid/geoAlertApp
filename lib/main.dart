@@ -20,6 +20,7 @@ import 'package:geoalert/presentation/util/dialog_util.dart';
 import 'package:geoalert/presentation/util/location_service_listener.dart';
 import 'package:geoalert/routes/app_router.dart';
 import 'package:geoalert/services/notification_service.dart';
+import 'package:jiffy/jiffy.dart';
 import 'package:permission_handler/permission_handler.dart' as perm;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'routes/routes.dart';
@@ -86,7 +87,7 @@ void onStart(ServiceInstance service) async {
 
       // 3. Fire-and-forget the location send (don't wait for completion)
       unawaited(sendLocationUseCase.execute(userId: userId, latitude: position.latitude, longitude: position.longitude).catchError((e) => print('Send location error: $e')));
-      print('Location sent: ${position.latitude}, ${position.longitude}');
+      // print('Location sent: ${position.latitude}, ${position.longitude}');
       // 4. Update notification
       if (service is AndroidServiceInstance) {
         service.setForegroundNotificationInfo(title: "GeoAlert Service", content: "Updated at ${DateTime.now().toLocal()}");
@@ -145,6 +146,7 @@ void main() async {
   }
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await NotificationService.instance.initialize();
+  await Jiffy.setLocale('en');
 
   runApp(const ProviderScope(child: MyApp()));
 }
