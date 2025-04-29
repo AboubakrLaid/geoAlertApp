@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/network/exception_handler.dart';
 import 'package:geoalert/data/models/alert_model.dart';
@@ -60,18 +61,19 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<void> replyToAlert({required Reply reply}) async {
     print("reply ${reply.text}");
-    print(reply.audio);
+    print(reply.audioFilePath);
 
     try {
       // /ms-notification/api/reply
-      // Simulate a network delay
-      final response = await _apiClient.post('/ms-notification/api/reply/', {
+      FormData formData = FormData.fromMap({
         'alert_id': reply.alertId,
         'text': reply.text,
-        'audio': reply.audio,
+        'audio': reply.audioFilePath != null ? await MultipartFile.fromFile(reply.audioFilePath!) : null,
         'user_id': reply.userId,
         "reply_type": reply.replyType,
       });
+      // Simulate a network delay
+      final response = await _apiClient.post('/ms-notification/api/reply/', formData);
       print('Reply sent: ${response.data}');
       // Here you would typically send the reply to the server
       // For this example, we'll just print it

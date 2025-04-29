@@ -31,7 +31,15 @@ class ApiClient {
     }
 
     try {
-      return await _dio.post(path, data: data);
+      Options? options;
+
+      // Set content type based on data type
+      if (data is FormData) {
+        options = Options(contentType: 'multipart/form-data');
+      } else {
+        options = Options(contentType: 'application/json');
+      }
+      return await _dio.post(path, data: data, options: options);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

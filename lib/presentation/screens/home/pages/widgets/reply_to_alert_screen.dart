@@ -126,10 +126,10 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
       FocusScope.of(context).unfocus();
       final int alertId = widget.alert.alertId;
       final int userId = widget.alert.userId;
-      final audio = _waveController.file;
+      final String? audioFilePath = _waveController.file?.path;
       final String text = _messageController.text.trim();
       final int notificationId = widget.alert.notificationId;
-      final Reply reply = Reply(notificationId: notificationId, alertId: alertId, userId: userId, text: text, audio: audio != null ? File(audio.path) : null);
+      final Reply reply = Reply(notificationId: notificationId, alertId: alertId, userId: userId, text: text, audioFilePath: audioFilePath);
       await ref.read(replyToAlertProvider.notifier).reply(reply: reply).whenComplete(() {
         if (mounted) {
           final replyState = ref.read(replyToAlertProvider);
