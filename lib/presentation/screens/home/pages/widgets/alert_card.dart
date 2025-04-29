@@ -26,14 +26,21 @@ class AlertCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Text(
-                    alert.title,
-                    style: const TextStyle(fontFamily: "TittilumWeb", fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF252525)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                Row(
+                  children: [
+                    if (alert.beenRepliedTo) ...[Icon(Icons.check_circle, color: Color(0xFF22A447), size: 20), SizedBox(width: 8)],
+                    SizedBox(
+                      width: 200, // Set the width to limit the text width
+                      child: Text(
+                        alert.title,
+                        style: const TextStyle(fontFamily: "TittilumWeb", fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF252525)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
+
                 if (alert.date != null)
                   Text(
                     Jiffy.parseFromDateTime(alert.date!).format(pattern: 'MMM dd, yyyy'),
@@ -108,6 +115,8 @@ class AlertCard extends StatelessWidget {
         return const Color(0xFFFBA23C);
       case AlertSeverity.severe:
         return const Color(0xFFDC091A);
+      default:
+        return const Color(0xFF252525); // Default color if severity is not recognized
     }
   }
 }

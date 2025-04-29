@@ -18,6 +18,10 @@ class AlertDetailDialog extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              alert.beenRepliedTo
+                  ? Text('This alert has been acknowledged.', style: const TextStyle(fontSize: 14, color: Colors.green))
+                  : Text('This alert has not been acknowledged.', style: const TextStyle(fontSize: 14, color: Colors.red)),
+              const SizedBox(height: 10),
               Text(alert.title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
               if (alert.date != null) Text('Date: ${Jiffy.parseFromDateTime(alert.date!).format(pattern: 'MMM dd, yyyy')}', style: const TextStyle(fontSize: 14, color: Colors.grey)),

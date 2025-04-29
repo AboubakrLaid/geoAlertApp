@@ -45,6 +45,13 @@ class AlertNotifier extends StateNotifier<AsyncValue<List<Alert>>> {
       hasFetched = false;
     }
   }
+
+  void updateAlert(Alert updatedAlert) {
+    final currentAlerts = state.value ?? [];
+    final updatedAlerts = currentAlerts.map((alert) => alert.alertId == updatedAlert.alertId ? updatedAlert : alert).toList();
+    state = AsyncValue.data(updatedAlerts);
+    print("Updated alert: ${updatedAlert.title}");
+  }
 }
 
 // Reply Notifier

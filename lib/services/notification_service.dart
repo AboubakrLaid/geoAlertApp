@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:geoalert/core/network/api_client.dart';
+import 'package:geoalert/core/storage/local_storage.dart';
+import 'package:geoalert/data/repositories/firebase_repository_impl.dart';
+import 'package:geoalert/domain/usecases/register_fcm_token_usecase.dart';
 
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -29,12 +33,11 @@ class NotificationService {
     // Get FCM token
     final token = await _messaging.getToken();
     print('FCM Token: $token');
+    LocalStorage.instance.setFcmToken(token!);
   }
 
   Future<void> _requestPermission() async {
     final settings = await _messaging.requestPermission(alert: true, badge: true, sound: true, provisional: false, announcement: false, carPlay: false, criticalAlert: false);
-
-    print('Permission status: ${settings.authorizationStatus}');
   }
 
   Future<void> setupFlutterNotifications() async {

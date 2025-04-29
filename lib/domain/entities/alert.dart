@@ -1,6 +1,7 @@
 class Alert {
   final int alertId;
   final int userId;
+  final int notificationId;
   final String title;
   final String body;
   final bool beenRepliedTo;
@@ -8,33 +9,46 @@ class Alert {
   final String dangerType;
   final DateTime? date;
 
-  Alert({required this.date, required this.alertId, required this.userId, required this.title, required this.body, required this.beenRepliedTo, required this.severity, required this.dangerType});
+  Alert({
+    required this.notificationId,
+    required this.date,
+    required this.alertId,
+    required this.userId,
+    required this.title,
+    required this.body,
+    required this.beenRepliedTo,
+    required this.severity,
+    required this.dangerType,
+  });
+
+  Alert copyWith({required bool beenRepliedTo}) {
+    return Alert(notificationId: notificationId, alertId: alertId, userId: userId, title: title, body: body, beenRepliedTo: beenRepliedTo, severity: severity, dangerType: dangerType, date: date);
+  }
 }
 
-enum AlertSeverity { minor, moderate, severe }
+class AlertSeverity {
+  final String value;
 
-extension AlertSeverityExtension on AlertSeverity {
-  String get value {
-    switch (this) {
-      case AlertSeverity.minor:
-        return "Minor";
-      case AlertSeverity.moderate:
-        return "Moderate";
-      case AlertSeverity.severe:
-        return "Severe";
-    }
-  }
+  const AlertSeverity._(this.value);
 
-  static AlertSeverity fromString(String severity) {
-    switch (severity) {
-      case "Minor":
-        return AlertSeverity.minor;
-      case "Moderate":
-        return AlertSeverity.moderate;
-      case "Severe":
-        return AlertSeverity.severe;
+  static const minor = AlertSeverity._("minor");
+  static const moderate = AlertSeverity._("moderate");
+  static const severe = AlertSeverity._("severe");
+
+  // Allow creating new severities
+  factory AlertSeverity(String value) {
+    switch (value) {
+      case "minor":
+        return minor;
+      case "moderate":
+        return moderate;
+      case "severe":
+        return severe;
       default:
-        throw Exception('Unknown severity: $severity');
+        return AlertSeverity._(value);
     }
   }
+
+  @override
+  String toString() => value;
 }

@@ -44,4 +44,14 @@ class LocalStorage {
     await init();
     return _preferences?.getInt("user_id");
   }
+
+  Future<void> setFcmToken(String token) async {
+    await init();
+    await _preferences?.setString("fcm_token", token);
+  }
+
+  Future<String?> getFcmToken() async {
+    await init();
+    return _preferences?.getString("fcm_token");
+  }
 }

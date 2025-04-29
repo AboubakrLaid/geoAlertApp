@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geoalert/presentation/screens/home/pages/widgets/no_alert_widget.dart';
 import 'package:jiffy/jiffy.dart';
-import 'package:geoalert/domain/entities/alert.dart';
 import 'package:geoalert/presentation/providers/alert_provider.dart';
 import 'package:geoalert/presentation/screens/home/pages/widgets/alert_card.dart';
 
@@ -48,7 +48,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
               sliver: alertState.when(
                 data: (alerts) {
                   if (alerts.isEmpty) {
-                    return SliverFillRemaining(child: Center(child: Text('No alerts available', style: Theme.of(context).textTheme.bodyLarge)));
+                    return SliverFillRemaining(child: NoAlertWidget());
                   }
                   return SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
@@ -88,28 +88,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
           ],
         ),
       ),
-    );
-  }
-
-  void _showAlertDetails(BuildContext context, Alert alert) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: Text(alert.title),
-            content: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(alert.body),
-                  const SizedBox(height: 16),
-                  if (alert.date != null) Text('Posted: ${Jiffy.parseFromDateTime(alert.date!).format(pattern: 'MMM dd, yyyy • h:mm a')}', style: Theme.of(context).textTheme.bodySmall),
-                ],
-              ),
-            ),
-            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Close'))],
-          ),
     );
   }
 

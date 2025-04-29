@@ -1,10 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
+import 'package:geoalert/data/repositories/firebase_repository_impl.dart';
 import 'package:geoalert/domain/entities/auth_tokens.dart';
 import 'package:geoalert/domain/entities/user.dart';
 import 'package:geoalert/domain/repositories/auth_repository.dart';
 import 'package:geoalert/domain/usecases/login_usecase.dart';
+import 'package:geoalert/domain/usecases/register_fcm_token_usecase.dart';
 import 'package:geoalert/domain/usecases/register_usecase.dart';
 import 'package:geoalert/data/repositories/auth_repository_impl.dart';
 import 'package:geoalert/core/network/api_client.dart';
@@ -64,6 +68,17 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
         // Start fresh service with proper configuration
         await initializeService(); // Reinitialize configuration
         await manager.startService();
+      }
+      final ApiClient apiClient = ApiClient();
+      final FireBaseRepositoryImpl fcmTokenRepository = FireBaseRepositoryImpl(apiClient);
+      final RegisterFcmTokenUsecase registerFcmTokenUsecase = RegisterFcmTokenUsecase(fcmTokenRepository);
+      final fcmToken = await LocalStorage.instance.getFcmToken();
+      final userId = await LocalStorage.instance.getUserId();
+      if (fcmToken != null && userId != null) {
+        try {
+          unawaited(registerFcmTokenUsecase.registerFcmToken(fcmToken, userId));
+          // ignore: empty_catches
+        } catch (e) {}
       }
       state = AsyncValue.data(tokens);
     } catch (e) {

@@ -124,13 +124,22 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
   Future<void> _submitReply() async {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
-      final Reply reply = Reply(text: _messageController.text.trim(), audio: _waveController.file);
+      final int alertId = widget.alert.alertId;
+      final int userId = widget.alert.userId;
+      final audio = _waveController.file;
+      final String text = _messageController.text.trim();
+      final int notificationId = widget.alert.notificationId;
+      final Reply reply = Reply(notificationId: notificationId, alertId: alertId, userId: userId, text: text, audio: audio != null ? File(audio.path) : null);
       await ref.read(replyToAlertProvider.notifier).reply(reply: reply).whenComplete(() {
         if (mounted) {
           final replyState = ref.read(replyToAlertProvider);
           if (replyState.hasError) {
             CustomSnackBar.show(context, message: replyState.error.toString());
           }
+          // update the alert state (beenRepliedTo set to true)
+          final updatedAlert = widget.alert.copyWith(beenRepliedTo: true);
+          ref.read(alertProvider.notifier).updateAlert(updatedAlert);
+          CustomSnackBar.show(context, message: "Reply sent successfully");
           GoRouter.of(context).pop();
         }
       });
@@ -151,7 +160,7 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
               children: [
                 IconButton(icon: const Icon(Icons.arrow_back, size: 30), onPressed: () => Navigator.of(context).pop()),
                 const SizedBox(width: 16),
-                Text(widget.alert.title, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, fontFamily: 'TittilumWeb')),
+                Flexible(child: Text(widget.alert.title, style: TextStyle(fontSize: 28, fontWeight: FontWeight.w600, fontFamily: 'TittilumWeb'), maxLines: 1, overflow: TextOverflow.ellipsis)),
               ],
             ),
             const Divider(color: Color.fromRGBO(208, 213, 221, 1), thickness: 1, height: 40),
