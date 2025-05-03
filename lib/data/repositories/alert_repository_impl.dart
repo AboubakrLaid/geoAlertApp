@@ -51,6 +51,9 @@ class AlertRepositoryImpl implements AlertRepository {
       for (var json in response.data) {
         alerts.add(AlertModel.fromJson(json));
       }
+      if (alerts.isNotEmpty) {
+        alerts.sort((a, b) => b.date!.compareTo(a.date!));
+      }
       return alerts;
     } catch (e) {
       handleApiException(e);

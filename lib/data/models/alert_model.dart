@@ -2,6 +2,7 @@ import 'package:geoalert/domain/entities/alert.dart';
 
 class AlertModel extends Alert {
   AlertModel({
+    required super.id,
     required super.alertId,
     required super.notificationId,
     required super.date,
@@ -15,6 +16,7 @@ class AlertModel extends Alert {
 
   factory AlertModel.fromJson(Map<String, dynamic> json) {
     return AlertModel(
+      id: json['id'],
       alertId: json['alert_id'],
       userId: json['user_id'],
       notificationId: json['id'],
@@ -23,7 +25,7 @@ class AlertModel extends Alert {
       beenRepliedTo: json['been_replied_to'],
       severity: AlertSeverity(json['severity']),
       dangerType: json['danger_type'],
-      date: json['created_at'] != null ? DateTime.parse(json['date']) : null,
+      date: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
     );
   }
 

@@ -1,4 +1,5 @@
 class Alert {
+  final int id;
   final int alertId;
   final int userId;
   final int notificationId;
@@ -10,6 +11,7 @@ class Alert {
   final DateTime? date;
 
   Alert({
+    required this.id,
     required this.notificationId,
     required this.date,
     required this.alertId,
@@ -22,7 +24,18 @@ class Alert {
   });
 
   Alert copyWith({required bool beenRepliedTo}) {
-    return Alert(notificationId: notificationId, alertId: alertId, userId: userId, title: title, body: body, beenRepliedTo: beenRepliedTo, severity: severity, dangerType: dangerType, date: date);
+    return Alert(
+      notificationId: notificationId,
+      alertId: alertId,
+      userId: userId,
+      title: title,
+      body: body,
+      beenRepliedTo: beenRepliedTo,
+      severity: severity,
+      dangerType: dangerType,
+      date: date,
+      id: id,
+    );
   }
 }
 

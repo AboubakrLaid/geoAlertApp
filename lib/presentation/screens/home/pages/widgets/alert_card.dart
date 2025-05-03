@@ -30,7 +30,7 @@ class AlertCard extends StatelessWidget {
                   children: [
                     if (alert.beenRepliedTo) ...[Icon(Icons.check_circle, color: Color(0xFF22A447), size: 20), SizedBox(width: 8)],
                     SizedBox(
-                      width: 200, // Set the width to limit the text width
+                      width: MediaQuery.of(context).size.width * 0.35,
                       child: Text(
                         alert.title,
                         style: const TextStyle(fontFamily: "TittilumWeb", fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF252525)),
