@@ -29,6 +29,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _audioPlayer = AudioPlayer();
 
     _audioPlayer.onPlayerStateChanged.listen((state) {
+      if (!mounted) return;
       setState(() {
         _playerState = state;
         _isPlaying = state == PlayerState.playing;
@@ -57,49 +58,50 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   Future<void> _playAudio() async {
     try {
-      setState(() {
-        _isDownloading = true;
-        _downloadProgress = 0;
-      });
+      if (_currentFilePath == null) {
+        setState(() {
+          _isDownloading = true;
+          _downloadProgress = 0;
+        });
 
-      final accessToken = await LocalStorage.instance.getAccessToken();
-      final dio = Dio();
+        final accessToken = await LocalStorage.instance.getAccessToken();
+        final dio = Dio();
 
-      // Create unique filename for each download
-      final directory = await getTemporaryDirectory();
-      final filePath = '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
-      final file = File(filePath);
-      print("Audio url: ${widget.audioUrl}");
-      // Download the file
-      await dio.download(
-        widget.audioUrl,
-        // "https://example.com/audio.m4a", // Replace with your audio URL
-        filePath,
-        options: Options(headers: {if (accessToken != null) 'Authorization': 'Bearer $accessToken'}),
-        onReceiveProgress: (received, total) {
-          if (total != -1) {
-            setState(() {
-              _downloadProgress = received / total;
-            });
+        // Create unique filename for each download
+        final directory = await getTemporaryDirectory();
+        final filePath = '${directory.path}/audio_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final file = File(filePath);
+        print("Audio url: ${widget.audioUrl}");
+        // Download the file
+        await dio.download(
+          widget.audioUrl,
+          // "https://example.com/audio.m4a", // Replace with your audio URL
+          filePath,
+          options: Options(headers: {if (accessToken != null) 'Authorization': 'Bearer $accessToken'}),
+          onReceiveProgress: (received, total) {
+            if (total != -1) {
+              setState(() {
+                _downloadProgress = received / total;
+              });
+            }
+          },
+        );
+
+        // Clean up previous file if exists
+        if (_currentFilePath != null) {
+          final previousFile = File(_currentFilePath!);
+          if (await previousFile.exists()) {
+            await previousFile.delete();
           }
-        },
-      );
-
-      // Clean up previous file if exists
-      if (_currentFilePath != null) {
-        final previousFile = File(_currentFilePath!);
-        if (await previousFile.exists()) {
-          await previousFile.delete();
         }
+
+        setState(() {
+          _currentFilePath = filePath;
+          _isDownloading = false;
+        });
       }
-
-      setState(() {
-        _currentFilePath = filePath;
-        _isDownloading = false;
-      });
-
       // Play the audio
-      await _audioPlayer.play(DeviceFileSource(filePath));
+      await _audioPlayer.play(DeviceFileSource(_currentFilePath!));
     } on DioException catch (e) {
       setState(() {
         _isDownloading = false;
@@ -164,7 +166,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       ? _pauseAudio
                       : _playAudio,
             ),
-            IconButton(icon: const Icon(Icons.stop), onPressed: _isPlaying ? _stopAudio : null),
+            // IconButton(icon: const Icon(Icons.stop), onPressed: _isPlaying ? _stopAudio : null),
             if (_isDownloading)
               Expanded(child: LinearProgressIndicator(value: _downloadProgress, color: Color.fromRGBO(220, 9, 26, 1), backgroundColor: Color.fromRGBO(220, 9, 26, 0.5)))
             else
@@ -177,10 +179,10 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
               // make the slider move smoothly
               Slider(
                 min: 0,
-                max: _duration.inSeconds.toDouble(),
-                value: _position.inSeconds.toDouble(),
+                max: _duration.inMilliseconds.toDouble(),
+                value: _position.inMilliseconds.toDouble(),
                 onChanged: (value) async {
-                  await _audioPlayer.seek(Duration(seconds: value.toInt()));
+                  await _audioPlayer.seek(Duration(milliseconds: value.toInt()));
                 },
               ),
               Padding(

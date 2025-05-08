@@ -24,29 +24,31 @@ class AlertCard extends StatelessWidget {
             isScrollControlled: true,
             backgroundColor: Colors.transparent, // Needed to create custom barrier and full height sheet
             builder: (context) {
-              return Stack(
-                children: [
-                  // Dismiss barrier on top
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: Container(
-                      height: MediaQuery.of(context).size.height * 0.2, // Height of the dismissible area
-                      color: Colors.transparent,
+              return SafeArea(
+                child: Stack(
+                  children: [
+                    // Dismiss barrier on top
+                    GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        height: MediaQuery.of(context).size.height * 0.2, // Height of the dismissible area
+                        color: Colors.transparent,
+                      ),
                     ),
-                  ),
-                  // Bottom Sheet content
-                  DraggableScrollableSheet(
-                    initialChildSize: 0.8,
-                    minChildSize: 0.8,
-                    maxChildSize: 1.0,
-                    builder: (_, controller) {
-                      return Container(
-                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                        child: SingleChildScrollView(controller: controller, child: AlertDetailDialog(alert: alert)),
-                      );
-                    },
-                  ),
-                ],
+                    // Bottom Sheet content
+                    DraggableScrollableSheet(
+                      initialChildSize: 1,
+                      minChildSize: 0.5,
+                      maxChildSize: 1.0,
+                      builder: (_, controller) {
+                        return Container(
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                          child: SingleChildScrollView(controller: controller, child: AlertDetailDialog(alert: alert)),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               );
             },
           );

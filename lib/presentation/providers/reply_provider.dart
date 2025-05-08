@@ -23,22 +23,32 @@ class ReplyNotifier extends StateNotifier<AsyncValue<Reply?>> {
   ReplyNotifier(this._getReplyUseCase) : super(const AsyncValue.data(null));
 
   // a set of fetch replies for a specific alert, so I don't have to call the API every time
-  final Map<Map<String, Object>, AsyncValue<Reply?>> _replyCache = {};
+  final Map<String, Reply> _replyCache = {};
 
   Future<void> fetchReply({required String alertId, required int userId, required int notificationId}) async {
     state = const AsyncValue.loading();
     try {
       final reply = await _getReplyUseCase.execute(alertId: alertId, userId: userId, notificationId: notificationId);
       state = AsyncValue.data(reply);
-      _replyCache[{'alertId': alertId, 'userId': userId, 'notificationId': notificationId}] = state;
+      final key = _generateKey(alertId: alertId, userId: userId, notificationId: notificationId);
+      if (reply != null) {
+        _replyCache[key] = reply;
+      } else {
+        state = const AsyncValue.data(null);
+      }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e.toString(), stackTrace);
-      _replyCache.remove({'alertId': alertId, 'userId': userId, 'notificationId': notificationId});
+      final key = _generateKey(alertId: alertId, userId: userId, notificationId: notificationId);
+      _replyCache.remove(key);
     }
   }
 
   // check if the reply is already in the cache
   bool isReplyCached({required String alertId, required int userId, required int notificationId}) {
-    return _replyCache.containsKey({'alertId': alertId, 'userId': userId, 'notificationId': notificationId});
+    return _replyCache.containsKey(_generateKey(alertId: alertId, userId: userId, notificationId: notificationId));
+  }
+
+  String _generateKey({required String alertId, required int userId, required int notificationId}) {
+    return "$alertId-$userId-$notificationId";
   }
 }

@@ -22,6 +22,12 @@ class ReplyToAlertScreen extends ConsumerStatefulWidget {
 }
 
 class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
+  // used to play the audio
+  bool _isPlaying = false;
+  final int _timeLeft = 0;
+  Duration _currentPosition = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+
   bool _isEditingText = false;
   bool _isRecording = false;
   bool _isRecordingFinished = false;
@@ -81,6 +87,7 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
       setState(() {
         _isRecording = false;
         _isRecordingFinished = true;
+        _totalDuration = Duration(seconds: _seconds);
       });
       _timer?.cancel();
       final file = _waveController.file;
@@ -99,13 +106,37 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
   }
 
   Future<void> _playRecording() async {
+    setState(() {
+      _isPlaying = true;
+    });
     final file = _waveController.file;
     if (file == null) return;
     final source = kIsWeb ? UrlSource(file.path) : DeviceFileSource(file.path);
     await _audioPlayer.play(source);
+
+    _audioPlayer.onPlayerStateChanged.listen((state) {
+      // update the time left
+      if (state == PlayerState.stopped || state == PlayerState.paused) {
+        setState(() {
+          _isPlaying = false;
+        });
+      } else if (state == PlayerState.completed) {
+        setState(() {
+          _isPlaying = false;
+        });
+      }
+    });
+    _audioPlayer.onPositionChanged.listen((position) {
+      setState(() {
+        _currentPosition = position;
+      });
+    });
   }
 
   Future<void> _stopPlayback() async {
+    setState(() {
+      _isPlaying = false;
+    });
     await _audioPlayer.stop();
   }
 
@@ -145,6 +176,13 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
         }
       });
     }
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$minutes:$seconds';
   }
 
   @override
@@ -237,36 +275,42 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
                               ),
                             ),
                           ),
-                      if (_isRecordingFinished) ...[
-                        SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            AnimatedDefaultTextStyle(
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.black, // Change color after finishing
-                                fontWeight: FontWeight.bold,
-                              ),
-                              duration: Duration(milliseconds: 300),
-                              child: Text("Recording duration: $_seconds sec"),
-                            ),
-                            const SizedBox(width: 16),
 
-                            // Play button with animation
-                            _isRecordingFinished
-                                ? AnimatedScale(
-                                  scale: _isRecordingFinished ? 1.2 : 1.0,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: IconButton(icon: const Icon(Icons.play_arrow, size: 30), onPressed: _playRecording, tooltip: 'Play Recording'),
-                                )
-                                : Container(), // Hide play button if recording is in progress
-                            // Delete button with animation
-                            AnimatedScale(
-                              scale: _isRecordingFinished ? 1.2 : 1.0,
+                      if (_isRecordingFinished) ...[
+                        const SizedBox(height: 24),
+                        Row(
+                          children: [
+                            // play and pause button with animation
+                            AnimatedSwitcher(
                               duration: const Duration(milliseconds: 300),
-                              child: IconButton(icon: const Icon(Icons.delete, size: 30), onPressed: _deleteRecording, tooltip: 'Delete Recording'),
+                              child: IconButton(
+                                key: ValueKey(_isRecordingFinished),
+                                icon: Icon(_isPlaying ? Icons.pause : Icons.play_arrow, size: 30),
+                                onPressed: _isPlaying ? _stopPlayback : _playRecording,
+                                tooltip: 'Play Recording',
+                              ),
                             ),
+
+                            // slider
+                            Expanded(
+                              child: Slider(
+                                activeColor: const Color.fromRGBO(220, 9, 26, 1),
+                                inactiveColor: const Color.fromRGBO(220, 9, 26, 0.5),
+                                min: 0,
+                                max: _totalDuration.inMilliseconds.toDouble(),
+                                value: _currentPosition.inMilliseconds.clamp(0, _totalDuration.inMilliseconds).toDouble(),
+                                onChanged: (value) async {
+                                  await _audioPlayer.seek(Duration(milliseconds: value.toInt()));
+                                },
+                              ),
+                            ),
+                            // left side time
+                            Text(
+                              _formatDuration(_totalDuration - _currentPosition),
+                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400, color: Color.fromRGBO(33, 33, 33, 1), fontFamily: 'Space Grotesk'),
+                            ),
+                            // delete button
+                            IconButton(icon: const Icon(Icons.delete, size: 30), onPressed: _deleteRecording, tooltip: 'Delete Recording'),
                           ],
                         ),
                       ],
