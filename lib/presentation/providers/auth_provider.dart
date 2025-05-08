@@ -45,41 +45,34 @@ class AuthNotifier extends StateNotifier<AsyncValue<AuthTokens?>> {
   final Ref _ref;
 
   AuthNotifier(this._loginUseCase, this._registerUseCase, this._ref) : super(const AsyncValue.data(null));
+  Future<void> _restartAndConfigureService() async {
+    final manager = BackgroundServiceManager();
+    await manager.restartService();
+
+    final apiClient = ApiClient();
+    final fcmTokenRepository = FireBaseRepositoryImpl(apiClient);
+    final registerFcmTokenUsecase = RegisterFcmTokenUsecase(fcmTokenRepository);
+    final fcmToken = await LocalStorage.instance.getFcmToken();
+    final userId = await LocalStorage.instance.getUserId();
+    if (fcmToken != null && userId != null) {
+      try {
+        unawaited(registerFcmTokenUsecase.registerFcmToken(fcmToken, userId));
+      } catch (e) {
+        // Silently ignore for now
+      }
+    }
+  }
 
   Future<void> login(String email, String password) async {
     state = const AsyncValue.loading();
     try {
       final tokens = await _loginUseCase.execute(email, password);
-      if (tokens != null) {
-        await LocalStorage.instance.setAccessToken(tokens.accessToken);
-        await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
 
-        await _ref.read(userNotifierProvider.notifier).fetchUser();
-        final service = FlutterBackgroundService();
-        if (await service.isRunning()) {
-          service.invoke("stopService");
-          await Future.delayed(Duration(seconds: 1)); // Ensure clean stop
-        }
+      await LocalStorage.instance.setAccessToken(tokens!.accessToken);
+      await LocalStorage.instance.setRefreshToken(tokens.refreshToken);
 
-        final manager = BackgroundServiceManager();
-        await manager.stopService();
-        await Future.delayed(Duration(seconds: 1)); // Ensure clean stop
-
-        // Start fresh service with proper configuration
-        await initializeService(); // Reinitialize configuration
-        await manager.startService();
-      }
-      final ApiClient apiClient = ApiClient();
-      final FireBaseRepositoryImpl fcmTokenRepository = FireBaseRepositoryImpl(apiClient);
-      final RegisterFcmTokenUsecase registerFcmTokenUsecase = RegisterFcmTokenUsecase(fcmTokenRepository);
-      final fcmToken = await LocalStorage.instance.getFcmToken();
-      final userId = await LocalStorage.instance.getUserId();
-      if (fcmToken != null && userId != null) {
-        try {
-          unawaited(registerFcmTokenUsecase.registerFcmToken(fcmToken, userId));
-          // ignore: empty_catches
-        } catch (e) {}
-      }
+      await _ref.read(userNotifierProvider.notifier).fetchUser();
+      unawaited(_restartAndConfigureService());
       state = AsyncValue.data(tokens);
     } catch (e) {
       print("Auth Notifier Error: $e");

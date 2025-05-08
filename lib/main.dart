@@ -39,14 +39,13 @@ Future<void> initializeService() async {
       autoStart: false,
       isForegroundMode: true,
       notificationChannelId: 'my_foreground',
-      initialNotificationTitle: 'GeoAlert Service Running',
-      initialNotificationContent: 'Initializing',
+      initialNotificationTitle: 'GeoAlert',
+      initialNotificationContent: 'Initializing...',
       foregroundServiceNotificationId: 888,
       foregroundServiceTypes: [AndroidForegroundType.location],
     ),
     iosConfiguration: IosConfiguration(autoStart: true, onForeground: onStart, onBackground: onIosBackground),
   );
-
   await service.startService();
 }
 
@@ -78,7 +77,6 @@ void onStart(ServiceInstance service) async {
         await Future.delayed(Duration(seconds: 30));
         continue;
       }
-
       // 2. Execute parallel operations with timeouts
       final results = await Future.wait([geoLocator.getCurrentPosition(), getFrequencyUseCase.execute().timeout(Duration(seconds: 10))]);
       final position = results[0] as geo.Position;
@@ -90,7 +88,7 @@ void onStart(ServiceInstance service) async {
       // print('Location sent: ${position.latitude}, ${position.longitude}');
       // 4. Update notification
       if (service is AndroidServiceInstance) {
-        service.setForegroundNotificationInfo(title: "GeoAlert Service", content: "Updated at ${DateTime.now().toLocal()}");
+        service.setForegroundNotificationInfo(title: "GeoAlert", content: "Location updated at ${Jiffy.parseFromDateTime(DateTime.now()).yMMMMEEEEdjm}");
       }
 
       // 5. Calculate precise delay to maintain frequency

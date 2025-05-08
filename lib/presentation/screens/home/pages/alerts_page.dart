@@ -60,7 +60,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
     // Then check every 30 seconds
     _checkForNewAlerts();
     _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      print('Checking for new alerts...');
       _checkForNewAlerts();
     });
   }
@@ -94,7 +93,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
         final hasNewAlerts = await notifier.checkNewNotifications(lastCheckedDate: lastAlertDate);
 
         if (hasNewAlerts && mounted) {
-          debugPrint('New alerts available!');
           _hasNewAlerts = true;
         }
       }
