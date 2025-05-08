@@ -1,6 +1,6 @@
 class Alert {
   final int id;
-  final int alertId;
+  final String alertId;
   final int userId;
   final int notificationId;
   final String title;

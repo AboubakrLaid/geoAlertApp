@@ -124,12 +124,13 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
   Future<void> _submitReply() async {
     if (_formKey.currentState!.validate()) {
       FocusScope.of(context).unfocus();
-      final int alertId = widget.alert.alertId;
+      final String alertId = widget.alert.alertId;
       final int userId = widget.alert.userId;
       final String? audioFilePath = _waveController.file?.path;
       final String text = _messageController.text.trim();
       final int notificationId = widget.alert.notificationId;
-      final Reply reply = Reply(notificationId: notificationId, alertId: alertId, userId: userId, text: text, audioFilePath: audioFilePath);
+      final String replyType = audioFilePath != null ? "audio" : "text";
+      final Reply reply = Reply(notificationId: notificationId, alertId: alertId, userId: userId, text: text, audioFilePath: audioFilePath, replyType: replyType);
       await ref.read(replyToAlertProvider.notifier).reply(reply: reply).whenComplete(() {
         if (mounted) {
           final replyState = ref.read(replyToAlertProvider);
@@ -173,12 +174,12 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
                     children: [
                       const SizedBox(height: 50),
                       _isEditingText
+                          // raise no error if there are no text
                           ? TextFormField(
                             controller: _messageController,
                             autofocus: true,
                             maxLines: 5,
                             decoration: const InputDecoration(hintText: "Type your reply here...", border: OutlineInputBorder()),
-                            validator: (value) => value!.isEmpty ? "Please enter a message" : null,
                           )
                           : GestureDetector(
                             onTap: () {
@@ -282,7 +283,7 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
                     replyState.isLoading
                         ? null
                         : () {
-                          if (_isEditingText) {
+                          if (_isEditingText || _isRecordingFinished) {
                             _submitReply();
                           } else {
                             CustomSnackBar.show(context, message: "Please tap to type your reply");

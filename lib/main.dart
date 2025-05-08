@@ -148,6 +148,8 @@ void main() async {
   await NotificationService.instance.initialize();
   await Jiffy.setLocale('en');
 
+  print("Access Token: $accessToken");
+
   runApp(const ProviderScope(child: MyApp()));
 }
 

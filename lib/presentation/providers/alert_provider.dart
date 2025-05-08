@@ -3,6 +3,7 @@ import 'package:geoalert/data/repositories/alert_repository_impl.dart';
 import 'package:geoalert/domain/entities/alert.dart';
 import 'package:geoalert/domain/entities/reply.dart';
 import 'package:geoalert/domain/repositories/alert_repository.dart';
+import 'package:geoalert/domain/usecases/check_new_notifications_usecase.dart';
 import 'package:geoalert/domain/usecases/get_alerts_usecase.dart';
 import 'package:geoalert/domain/usecases/reply_to_alert_usecase.dart';
 import 'package:geoalert/presentation/providers/auth_provider.dart'; // for apiClientProvider
@@ -22,6 +23,11 @@ final getAlertsUseCaseProvider = Provider<GetAlertsUseCase>((ref) {
 final replyToAlertUseCaseProvider = Provider<ReplyToAlertUseCase>((ref) {
   final repository = ref.read(alertRepositoryProvider);
   return ReplyToAlertUseCase(repository);
+});
+
+final newNotificationUseCaseProvider = Provider<CheckNewNotificationsUsecase>((ref) {
+  final repository = ref.read(alertRepositoryProvider);
+  return CheckNewNotificationsUsecase(repository);
 });
 
 // State Notifier
@@ -69,6 +75,26 @@ class ReplyToAlertNotifier extends StateNotifier<AsyncValue<void>> {
       state = const AsyncValue.data(null);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e.toString(), stackTrace);
+    }
+  }
+}
+
+final checkNewNotificationsProvider = StateNotifierProvider<CheckNewNotificationsNotifier, AsyncValue<bool>>((ref) => CheckNewNotificationsNotifier(ref.read(newNotificationUseCaseProvider)));
+
+class CheckNewNotificationsNotifier extends StateNotifier<AsyncValue<bool>> {
+  final CheckNewNotificationsUsecase _checkNewNotificationsUsecase;
+
+  CheckNewNotificationsNotifier(this._checkNewNotificationsUsecase) : super(const AsyncValue.data(false));
+
+  Future<bool> checkNewNotifications({required String lastCheckedDate}) async {
+    state = const AsyncValue.loading();
+    try {
+      final hasNewNotifications = await _checkNewNotificationsUsecase.execute(lastCheckedDate: lastCheckedDate);
+      state = AsyncValue.data(hasNewNotifications);
+      return hasNewNotifications;
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e.toString(), stackTrace);
+      return false;
     }
   }
 }

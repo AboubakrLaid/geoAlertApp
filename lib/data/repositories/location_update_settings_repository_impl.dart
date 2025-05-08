@@ -32,7 +32,6 @@ class LocationUpdateSettingsRepositoryImpl implements LocationUpdateSettingsRepo
           {'latitude': latitude, 'longitude': longitude},
         ],
       };
-      print("data : $data");
       final result = await _apiClient.post('/ms-GeoLocation/api/updateCurrentPosition', data, requireAuth: true);
       if (result.statusCode == 200) {
         return;

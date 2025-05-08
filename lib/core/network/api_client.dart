@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:dio/dio.dart';
 import 'package:geoalert/config/app_config.dart';
 import 'package:geoalert/core/network/api_interceptor.dart';
@@ -28,6 +30,7 @@ class ApiClient {
 
     if (!await _networkChecker.hasInternetConnection()) {
       throw ApiException("No internet connection. Please check your network.");
+      // use global key to show a custom snack bar
     }
 
     try {
@@ -54,6 +57,18 @@ class ApiClient {
 
     try {
       return await _dio.get(path);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<Response> download(String path, {required String filePath, required void Function(int, int)? onReceiveProgress, bool requireAuth = false}) async {
+    await _addAuthorizationHeaderIfNeeded(requireAuth: requireAuth);
+    if (!await _networkChecker.hasInternetConnection()) {
+      throw ApiException("No internet connection. Please check your network.");
+    }
+    try {
+      return await _dio.download(path, filePath, onReceiveProgress: onReceiveProgress);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

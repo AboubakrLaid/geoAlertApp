@@ -11,41 +11,9 @@ class AlertRepositoryImpl implements AlertRepository {
 
   AlertRepositoryImpl(this._apiClient);
 
-  // @override
-  // Future<List<Alert>> getAlerts() async {
-  //   try {
-  //     final response = await _apiClient.get('/alerts', requireAuth: true);
-  //     final List<dynamic> data = response.data['data'];
-
-  //     return data.map((json) => AlertModel.fromJson({'data': json})).toList();
-  //   } catch (e) {
-  //     handleApiException(e);
-  //     return []; // fallback
-  //   }
-  // }
   @override
   Future<List<Alert>> getAlerts() async {
     try {
-      // /ms-notification/api/notification/
-      // Simulate a network delay
-      // await Future.delayed(const Duration(seconds: 2));
-
-      // // Create 15 fake alerts
-      // List<Alert> fakeAlerts = List.generate(15, (index) {
-      //   return Alert(
-      //     alertId: index + 1,
-      //     userId: 123, // Dummy userId
-      //     title: 'Alerthsfdshdssdgsdgsdgsdgdsgdsgdsgdsgd #${index + 1}',
-      //     body:
-      //         'This is a fake alert message sdhfsdfhsdlkkkkk\\kkkkkkkkkkkkkkkkkkkkkkkkkkkk\\kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkhkllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllllldsddddddkbody for alert number ${index + 1}.',
-      //     beenRepliedTo: (index % 2 == 0) ? true : false, // Alternate between replied and not replied
-      //     severity: AlertSeverity.values[index % 3], // Cycle through severity levels
-      //     dangerType: 'General', // A general type for this fake example
-      //     date: DateTime.now().subtract(Duration(days: index)), // Different dates for each alert
-      //   );
-      // });
-
-      // return fakeAlerts;
       final response = await _apiClient.get('/ms-notification/api/notification/');
       List<Alert> alerts = [];
       for (var json in response.data) {
@@ -83,6 +51,18 @@ class AlertRepositoryImpl implements AlertRepository {
       print('Reply sent: ${reply.text}');
     } catch (e) {
       handleApiException(e);
+    }
+  }
+
+  @override
+  Future<bool> checkForNewAlerts({required String lastCheckedDate}) async {
+    try {
+      final url = '/ms-notification/api/check-new-notifications/?last_checked=$lastCheckedDate';
+      final response = await _apiClient.get(url, requireAuth: true);
+      return response.data['has_new_notifications'] ?? false;
+    } catch (e) {
+      handleApiException(e);
+      return false;
     }
   }
 }

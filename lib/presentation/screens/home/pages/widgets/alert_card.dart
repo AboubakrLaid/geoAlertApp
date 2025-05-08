@@ -18,7 +18,38 @@ class AlertCard extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 32),
       child: InkWell(
         onTap: () {
-          showDialog(context: context, builder: (context) => AlertDetailDialog(alert: alert));
+          // showDialog(context: context, builder: (context) => AlertDetailDialog(alert: alert));
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent, // Needed to create custom barrier and full height sheet
+            builder: (context) {
+              return Stack(
+                children: [
+                  // Dismiss barrier on top
+                  GestureDetector(
+                    onTap: () => Navigator.of(context).pop(),
+                    child: Container(
+                      height: MediaQuery.of(context).size.height * 0.2, // Height of the dismissible area
+                      color: Colors.transparent,
+                    ),
+                  ),
+                  // Bottom Sheet content
+                  DraggableScrollableSheet(
+                    initialChildSize: 0.8,
+                    minChildSize: 0.8,
+                    maxChildSize: 1.0,
+                    builder: (_, controller) {
+                      return Container(
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                        child: SingleChildScrollView(controller: controller, child: AlertDetailDialog(alert: alert)),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          );
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +59,7 @@ class AlertCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    if (alert.beenRepliedTo) ...[Icon(Icons.check_circle, color: Color(0xFF22A447), size: 20), SizedBox(width: 8)],
+                    // if (alert.beenRepliedTo) ...[Icon(Icons.check_circle, color: Color(0xFF22A447), size: 20), SizedBox(width: 8)],
                     SizedBox(
                       width: MediaQuery.of(context).size.width * 0.35,
                       child: Text(
