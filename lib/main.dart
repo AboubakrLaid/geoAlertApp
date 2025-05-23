@@ -25,6 +25,21 @@ import 'package:permission_handler/permission_handler.dart' as perm;
 import 'package:geolocator/geolocator.dart' as geo;
 import 'routes/routes.dart';
 
+Future<geo.Position> getFakeCoordinates() async {
+  return geo.Position(
+    longitude: 3.0588, // Example: Algiers longitude
+    latitude: 36.7538, // Example: Algiers latitude
+    timestamp: DateTime.now(),
+    accuracy: 5.0, // Low inaccuracy (ideal for testing)
+    altitude: 50.0, // Reasonable altitude
+    altitudeAccuracy: 3.0, // Optional; could be null if not needed
+    heading: 0.0, // Heading angle in degrees
+    headingAccuracy: 0.1, // Optional
+    speed: 0.0, // Not moving
+    speedAccuracy: 0.1, // Low speed error margin
+  );
+}
+
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
 
@@ -32,7 +47,7 @@ Future<void> initializeService() async {
     service.invoke("stopService");
     await Future.delayed(Duration(seconds: 1)); // Ensure clean stop
   }
-
+  // print("Srv initializing...");
   await service.configure(
     androidConfiguration: AndroidConfiguration(
       onStart: onStart,
@@ -46,6 +61,7 @@ Future<void> initializeService() async {
     ),
     iosConfiguration: IosConfiguration(autoStart: true, onForeground: onStart, onBackground: onIosBackground),
   );
+  // print("Srv initialized");
   await service.startService();
 }
 
@@ -64,6 +80,7 @@ void onStart(ServiceInstance service) async {
     await service.stopSelf();
   });
 
+  bool isUsingFakeCoordinates = await LocalStorage.instance.getUsingFakeCoordinates() ?? false;
   while (true) {
     final cycleStartTime = DateTime.now();
 
@@ -77,12 +94,17 @@ void onStart(ServiceInstance service) async {
         await Future.delayed(Duration(seconds: 30));
         continue;
       }
+      // print("Srv getting location for user: $userId");
       // 2. Execute parallel operations with timeouts
-      final results = await Future.wait([geoLocator.getCurrentPosition(), getFrequencyUseCase.execute().timeout(Duration(seconds: 10))]);
+      final results = await Future.wait([
+        isUsingFakeCoordinates ? getFakeCoordinates() : geoLocator.getCurrentPosition(locationSettings: geo.LocationSettings(accuracy: geo.LocationAccuracy.best)),
+        getFrequencyUseCase.execute().timeout(Duration(seconds: 10)),
+      ]);
       final position = results[0] as geo.Position;
       final settings = results[1] as LocationUpdateSettings?;
       final frequency = settings?.frequency ?? 10;
 
+      // print("Srv got location: ${position.latitude}, ${position.longitude}");
       // 3. Fire-and-forget the location send (don't wait for completion)
       unawaited(sendLocationUseCase.execute(userId: userId, latitude: position.latitude, longitude: position.longitude).catchError((e) => print('Send location error: $e')));
       // print('Location sent: ${position.latitude}, ${position.longitude}');
@@ -100,6 +122,7 @@ void onStart(ServiceInstance service) async {
       } else {
         // print('Cycle took longer than frequency ($elapsedSeconds > $frequency)');
       }
+      // print("Srv cycle completed");
     } catch (e) {
       // print('Service error: $e\n$st');
       await Future.delayed(Duration(seconds: 10));

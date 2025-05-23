@@ -5,8 +5,28 @@ import 'package:geoalert/routes/routes.dart';
 import 'package:geoalert/services/background_service.dart';
 import 'package:go_router/go_router.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
+
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  bool isUsingFakeCurrentLocation = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Check if the user is using a fake current location
+      LocalStorage.instance.getUsingFakeCoordinates().then((value) {
+        setState(() {
+          isUsingFakeCurrentLocation = value ?? false;
+        });
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +66,25 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          // add a switch to toggle fake location
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Use Fake Location', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, fontFamily: 'SpaceGrotesk')),
+                Switch(
+                  value: isUsingFakeCurrentLocation,
+                  onChanged: (value) {
+                    setState(() {
+                      isUsingFakeCurrentLocation = value;
+                      LocalStorage.instance.setUsingFakeCoordinates(value);
+                    });
+                  },
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

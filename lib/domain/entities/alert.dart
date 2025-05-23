@@ -9,6 +9,7 @@ class Alert {
   final AlertSeverity severity;
   final String dangerType;
   final DateTime? date;
+  final bool isExpired;
 
   Alert({
     required this.id,
@@ -21,20 +22,34 @@ class Alert {
     required this.beenRepliedTo,
     required this.severity,
     required this.dangerType,
+    required this.isExpired,
   });
 
-  Alert copyWith({required bool beenRepliedTo}) {
+  Alert copyWith({
+    int? id,
+    String? alertId,
+    int? userId,
+    int? notificationId,
+    String? title,
+    String? body,
+    bool? beenRepliedTo,
+    AlertSeverity? severity,
+    String? dangerType,
+    DateTime? date,
+    bool? isExpired,
+  }) {
     return Alert(
-      notificationId: notificationId,
-      alertId: alertId,
-      userId: userId,
-      title: title,
-      body: body,
-      beenRepliedTo: beenRepliedTo,
-      severity: severity,
-      dangerType: dangerType,
-      date: date,
-      id: id,
+      id: id ?? this.id,
+      alertId: alertId ?? this.alertId,
+      userId: userId ?? this.userId,
+      notificationId: notificationId ?? this.notificationId,
+      title: title ?? this.title,
+      body: body ?? this.body,
+      beenRepliedTo: beenRepliedTo ?? this.beenRepliedTo,
+      severity: severity ?? this.severity,
+      dangerType: dangerType ?? this.dangerType,
+      date: date ?? this.date,
+      isExpired: isExpired ?? this.isExpired,
     );
   }
 }

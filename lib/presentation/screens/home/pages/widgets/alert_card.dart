@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geoalert/presentation/screens/home/pages/widgets/alert_dialogue.dart';
+import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
@@ -114,16 +115,24 @@ class AlertCard extends StatelessWidget {
             ),
             if (!alert.beenRepliedTo) ...[
               const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color.fromRGBO(220, 9, 26, 1),
-                  padding: const EdgeInsets.all(8),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+              Tooltip(
+                message: alert.isExpired ? 'This alert has expired' : 'Respond this alert',
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: alert.isExpired ? const Color(0xFFD9D9D9) : const Color.fromRGBO(220, 9, 26, 1),
+                    padding: const EdgeInsets.all(8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
+
+                  onPressed: () {
+                    if (alert.isExpired) {
+                      CustomSnackBar.show(context, message: 'This alert has expired', backgroundColor: const Color.fromRGBO(220, 9, 26, 1));
+                      return;
+                    }
+                    GoRouter.of(context).push(Routes.replyToAlert, extra: alert);
+                  },
+                  child: const Text('Acknowledge', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
                 ),
-                onPressed: () {
-                  GoRouter.of(context).push(Routes.replyToAlert, extra: alert);
-                },
-                child: const Text('Acknowledge', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
               ),
             ],
           ],

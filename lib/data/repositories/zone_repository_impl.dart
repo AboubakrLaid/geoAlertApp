@@ -17,20 +17,47 @@ class ZoneRepositoryImpl implements ZoneRepository {
     try {
       // Simulate a network delay
       // await Future.delayed(const Duration(seconds: 2));
-      // return Future.value(
-      //   Zzone(
-      //     id: _uuid.v4(),
-      //     name: 'Zone A',
-      //     coordinates: [
-      //       Coordinate(latitude: 36.75, longitude: 3.06), // Algiers
-      //       Coordinate(latitude: 35.6971, longitude: -0.6308), // Oran
-      //       Coordinate(latitude: 36.365, longitude: 6.6147), // Constantine
-      //       Coordinate(latitude: 31.61, longitude: -2.23), // Béchar
-      //       Coordinate(latitude: 35.38, longitude: 1.32), // Tiaret
-      //     ],
-      //   ),
+      // sidi bel abbes
+      // return Zzone(
+      //   id: _uuid.v4(),
+      //   name: 'Sidi Bel Abbes',
+      //   coordinates: [
+      //     Coordinate(latitude: 35.210, longitude: -0.650), // Northwest
+      //     Coordinate(latitude: 35.210, longitude: -0.610), // Northeast
+      //     Coordinate(latitude: 35.170, longitude: -0.610), // Southeast
+      //     Coordinate(latitude: 35.170, longitude: -0.650), // Southwest
+      //     Coordinate(latitude: 35.210, longitude: -0.650), // Close the polygon
+      //   ],
       // );
-      final res = await _apiClient.get("/ms-alert/api/zone/A2", requireAuth: true);
+      // return Zzone(
+      //   id: 'algiers_rectangle_zone', // Replace with your UUID generator
+      //   name: 'Algiers Security Zone',
+      //   coordinates: [
+      //     Coordinate(latitude: 36.872557, longitude: 2.896593), // Northwest
+      //     Coordinate(latitude: 36.576281, longitude: 2.896593), // Southwest
+      //     Coordinate(latitude: 36.576281, longitude: 3.290619), // Southeast
+      //     Coordinate(latitude: 36.872557, longitude: 3.290619), // Northeast
+      //     Coordinate(latitude: 36.872557, longitude: 2.896593), // Close polygon
+      //   ],
+      // );
+      // return Zzone(
+      //   id: _uuid.v4(),
+      //   name: 'Sidi Bel Abbes',
+      //   coordinates: [
+      //     Coordinate(latitude: 35.223645, longitude: -0.651175), // Northwest
+      //     Coordinate(latitude: 35.215049, longitude: -0.661418),
+      //     Coordinate(latitude: 35.208012, longitude: -0.667761),
+      //     Coordinate(latitude: 35.176817, longitude: -0.674149), // Southernmost
+      //     Coordinate(latitude: 35.171840, longitude: -0.639826),
+      //     Coordinate(latitude: 35.174105, longitude: -0.611579),
+      //     Coordinate(latitude: 35.179989, longitude: -0.595798), // Northeast
+      //     Coordinate(latitude: 35.193782, longitude: -0.581974),
+      //     Coordinate(latitude: 35.227439, longitude: -0.591722), // Northern tip
+      //     Coordinate(latitude: 35.223645, longitude: -0.651175), // Close polygon
+      //   ],
+      // );
+
+      final res = await _apiClient.get("/ms-alert/api/zone/$idAlert", requireAuth: true);
       final json = res.data;
       if (json != null) {
         return ZoneModel.fromJson(json);
@@ -46,61 +73,11 @@ class ZoneRepositoryImpl implements ZoneRepository {
   @override
   Future<List<Zzone>> getZones() async {
     try {
-      // zone of Mostaganem, Oran, Tiaret, and Algiers
-      // Simulate a network delay
-      // await Future.delayed(const Duration(seconds: 2));
-      // return Future.value([
-      //   Zzone(
-      //     id: _uuid.v4(),
-      //     name: 'Mostaganem',
-      //     coordinates: [
-      //       Coordinate(latitude: 35.968, longitude: 0.089), // Northwest coast
-      //       Coordinate(latitude: 36.030, longitude: 0.295), // North-central
-      //       Coordinate(latitude: 35.954, longitude: 0.425), // Northeast edge
-      //       Coordinate(latitude: 35.775, longitude: 0.349), // East inland
-      //       Coordinate(latitude: 35.677, longitude: 0.134), // Southeast
-      //       Coordinate(latitude: 35.791, longitude: -0.001), // Southwest
-      //       Coordinate(latitude: 35.900, longitude: -0.050), // West inland
-      //     ],
-      //   ),
-      //   Zzone(
-      //     id: _uuid.v4(),
-      //     name: 'Oran',
-      //     coordinates: [
-      //       Coordinate(latitude: 35.6971, longitude: -0.6308), // Oran
-      //       Coordinate(latitude: 35.688, longitude: -0.600), // North
-      //       Coordinate(latitude: 35.700, longitude: -0.650), // South
-      //       Coordinate(latitude: 35.680, longitude: -0.700), // East
-      //       Coordinate(latitude: 35.710, longitude: -0.600), // West
-      //     ],
-      //   ),
-      //   Zzone(
-      //     id: _uuid.v4(),
-      //     name: 'Tiaret',
-      //     coordinates: [
-      //       Coordinate(latitude: 35.38, longitude: 1.32), // Tiaret
-      //       Coordinate(latitude: 35.400, longitude: 1.300), // North
-      //       Coordinate(latitude: 35.380, longitude: 1.350), // South
-      //       Coordinate(latitude: 35.370, longitude: 1.320), // East
-      //       Coordinate(latitude: 35.390, longitude: 1.310), // West
-      //     ],
-      //   ),
-      //   Zzone(
-      //     id: _uuid.v4(),
-      //     name: 'Algiers',
-      //     coordinates: [
-      //       Coordinate(latitude: 36.75, longitude: 3.06), // Algiers
-      //       Coordinate(latitude: 36.760, longitude: 3.070), // North
-      //       Coordinate(latitude: 36.740, longitude: 3.060), // South
-      //       Coordinate(latitude: 36.750, longitude: 3.080), // East
-      //       Coordinate(latitude: 36.750, longitude: 3.050), // West
-      //     ],
-      //   ),
-      // ]);
       final res = await _apiClient.get("/ms-alert/api/zone", requireAuth: true);
       final json = res.data;
       print(json);
       if (json != null) {
+        print(json);
         return (json as List).map((zone) => ZoneModel.fromJson(zone)).toList();
       } else {
         return [];

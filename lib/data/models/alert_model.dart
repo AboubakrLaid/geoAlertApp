@@ -12,6 +12,7 @@ class AlertModel extends Alert {
     required super.beenRepliedTo,
     required super.severity,
     required super.dangerType,
+    required super.isExpired,
   });
 
   factory AlertModel.fromJson(Map<String, dynamic> json) {
@@ -26,10 +27,21 @@ class AlertModel extends Alert {
       severity: AlertSeverity(json['severity']),
       dangerType: json['danger_type'],
       date: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      isExpired: json['is_alert_expired'] ?? false,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'alertId': alertId, 'userId': userId, 'title': title, 'body': body, 'beenRepliedTo': beenRepliedTo, 'severity': severity.value, 'dangerType': dangerType};
+    return {
+      'alertId': alertId,
+      'userId': userId,
+      'title': title,
+      'body': body,
+      'beenRepliedTo': beenRepliedTo,
+      'severity': severity.value,
+      'dangerType': dangerType,
+      'date': date?.toIso8601String(),
+      'isExpired': isExpired,
+    };
   }
 }

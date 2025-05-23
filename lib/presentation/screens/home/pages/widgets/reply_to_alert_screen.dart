@@ -166,12 +166,17 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
         if (mounted) {
           final replyState = ref.read(replyToAlertProvider);
           if (replyState.hasError) {
-            CustomSnackBar.show(context, message: replyState.error.toString());
+            CustomSnackBar.show(context, message: replyState.error.toString(), backgroundColor: const Color.fromRGBO(220, 9, 26, 1));
+            if (replyState.error.toString().toLowerCase().contains("notification is expired")) {
+              final alertIsExpired = widget.alert.copyWith(isExpired: true);
+              ref.read(alertProvider.notifier).updateAlert(alertIsExpired);
+            }
+          } else {
+            // update the alert state (beenRepliedTo set to true)
+            final updatedAlert = widget.alert.copyWith(beenRepliedTo: true);
+            ref.read(alertProvider.notifier).updateAlert(updatedAlert);
+            CustomSnackBar.show(context, message: "Reply sent successfully", backgroundColor: const Color.fromRGBO(0, 128, 0, 1));
           }
-          // update the alert state (beenRepliedTo set to true)
-          final updatedAlert = widget.alert.copyWith(beenRepliedTo: true);
-          ref.read(alertProvider.notifier).updateAlert(updatedAlert);
-          CustomSnackBar.show(context, message: "Reply sent successfully");
           GoRouter.of(context).pop();
         }
       });

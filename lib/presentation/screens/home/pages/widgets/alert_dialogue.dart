@@ -3,6 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/presentation/providers/reply_provider.dart';
 import 'package:geoalert/presentation/screens/home/pages/widgets/audio_player_widget.dart';
+import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
+import 'package:geoalert/routes/routes.dart';
+import 'package:go_router/go_router.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:geoalert/domain/entities/alert.dart';
 
@@ -136,8 +139,8 @@ class _AlertDetailDialogState extends ConsumerState<AlertDetailDialog> with Auto
                   ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error:
-                  (e, st) => Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  (e, st) => Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       Text('Failed to load your response'),
                       const SizedBox(height: 16),
@@ -158,18 +161,25 @@ class _AlertDetailDialogState extends ConsumerState<AlertDetailDialog> with Auto
           ],
           // add space here
           // View on Map Button
+          const SizedBox(height: 16),
           Center(
-            child: ElevatedButton.icon(
-              icon: const Icon(Icons.map, color: Colors.white),
-              label: const Text('View on Map', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(220, 9, 26, 1),
-                padding: const EdgeInsets.all(8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+            child: Tooltip(
+              message: widget.alert.isExpired ? 'This alert has expired' : '',
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.map, color: Colors.white),
+                label: const Text('View on Map', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.alert.isExpired ? const Color(0xFFD9D9D9) : const Color.fromRGBO(220, 9, 26, 1),
+                  padding: const EdgeInsets.all(8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                ),
+                onPressed:
+                    widget.alert.isExpired
+                        ? null // Disabled if expired
+                        : () {
+                          GoRouter.of(context).push(Routes.map, extra: widget.alert);
+                        },
               ),
-              onPressed: () {
-                // to do
-              },
             ),
           ),
         ],

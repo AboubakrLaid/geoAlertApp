@@ -42,6 +42,7 @@ class AlertRepositoryImpl implements AlertRepository {
         'audio': reply.audioFilePath != null ? await MultipartFile.fromFile(reply.audioFilePath!) : null,
         'user_id': reply.userId,
         "reply_type": reply.replyType,
+        "notification_id": reply.notificationId,
       });
       // Simulate a network delay
       final response = await _apiClient.post('/ms-notification/api/reply/', formData);

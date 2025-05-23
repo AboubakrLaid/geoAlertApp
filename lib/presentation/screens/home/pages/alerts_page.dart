@@ -22,10 +22,16 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   @override
   void initState() {
     super.initState();
+    print('qqq  Initializing AlertsPage');
+    _newAlertsCheckTimer = null;
+    _isCheckingForNewAlerts = false;
+    _hasNewAlerts = false;
     _initializeJiffy();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _fetchAlertsIfNeeded();
+      if (mounted) {
+        _fetchAlertsIfNeeded();
+      }
     });
   }
 
@@ -33,20 +39,22 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   void dispose() {
     _newAlertsCheckTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
+    print('qqq  Disposing AlertsPage');
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('qqq  AppLifecycleState: $state');
     if (state == AppLifecycleState.resumed) {
       _checkForNewAlerts();
 
       if (_newAlertsCheckTimer == null || !_newAlertsCheckTimer!.isActive) {
-        debugPrint('Resuming periodic timer...');
+        debugPrint('qqq  Resuming periodic timer...');
         _startNewAlertsCheckTimer();
       }
     } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive || state == AppLifecycleState.detached) {
-      debugPrint('Pausing periodic timer...');
+      debugPrint('qqq  Pausing periodic timer...');
       _newAlertsCheckTimer?.cancel();
       _newAlertsCheckTimer = null;
     }
@@ -57,9 +65,10 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   }
 
   void _startNewAlertsCheckTimer() {
+    print('qqq  Starting periodic timer...');
     // Then check every 30 seconds
     _checkForNewAlerts();
-    _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+    _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
       _checkForNewAlerts();
     });
   }
@@ -68,9 +77,9 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
     final notifier = ref.read(alertProvider.notifier);
     if (!notifier.hasFetched) {
       await notifier.fetchAlerts();
-      if (_newAlertsCheckTimer == null) {
-        _startNewAlertsCheckTimer();
-      }
+    }
+    if (_newAlertsCheckTimer == null) {
+      _startNewAlertsCheckTimer();
     }
   }
 
@@ -78,6 +87,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
     if (_isCheckingForNewAlerts) return;
 
     _isCheckingForNewAlerts = true;
+    print('qqq  Checking for new alerts...');
     try {
       final alertsNotifier = ref.read(alertProvider.notifier);
       final alerts = alertsNotifier.state.valueOrNull;
@@ -93,6 +103,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
         final hasNewAlerts = await notifier.checkNewNotifications(lastCheckedDate: lastAlertDate);
 
         if (hasNewAlerts && mounted) {
+          print('qqq  got new alerts');
           _hasNewAlerts = true;
         }
       }
@@ -114,6 +125,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
     });
 
     return Scaffold(
+      // appBar: AppBar(),
       body: Stack(
         children: [
           RefreshIndicator(

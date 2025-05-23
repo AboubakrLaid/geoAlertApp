@@ -54,4 +54,16 @@ class LocalStorage {
     await init();
     return _preferences?.getString("fcm_token");
   }
+
+  // set user fake coordinates
+  Future<void> setUsingFakeCoordinates(bool value) async {
+    await init();
+    await _preferences?.setBool("using_fake_coordinates", value);
+  }
+
+  // get user fake coordinates
+  Future<bool?> getUsingFakeCoordinates() async {
+    await init();
+    return _preferences?.getBool("using_fake_coordinates");
+  }
 }
