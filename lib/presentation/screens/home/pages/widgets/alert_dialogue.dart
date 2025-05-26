@@ -28,11 +28,7 @@ class _AlertDetailDialogState extends ConsumerState<AlertDetailDialog> with Auto
         // Handle the case where userId is not available
         return;
       }
-      // Check if the reply is already cached
-      if (ref.read(replyProvider.notifier).isReplyCached(alertId: widget.alert.alertId, userId: userId, notificationId: widget.alert.id)) {
-        return; // Reply is already cached, no need to fetch again
-      }
-      // Fetch the reply if not cached
+
       ref.read(replyProvider.notifier).fetchReply(alertId: widget.alert.alertId, userId: userId, notificationId: widget.alert.id);
     });
   }
@@ -142,8 +138,6 @@ class _AlertDetailDialogState extends ConsumerState<AlertDetailDialog> with Auto
                   (e, st) => Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      Text('Failed to load your response'),
-                      const SizedBox(height: 16),
                       ElevatedButton(
                         onPressed: () async {
                           final userId = await LocalStorage.instance.getUserId();
@@ -153,7 +147,7 @@ class _AlertDetailDialogState extends ConsumerState<AlertDetailDialog> with Auto
                           }
                           ref.read(replyProvider.notifier).fetchReply(alertId: widget.alert.alertId, userId: userId, notificationId: widget.alert.id);
                         },
-                        child: const Text('Retry'),
+                        child: const Text('Failed to load reply, try again'),
                       ),
                     ],
                   ),

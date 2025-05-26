@@ -39,13 +39,13 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   void dispose() {
     _newAlertsCheckTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
-    print('qqq  Disposing AlertsPage');
+    // clear the state
+
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('qqq  AppLifecycleState: $state');
     if (state == AppLifecycleState.resumed) {
       _checkForNewAlerts();
 
@@ -65,7 +65,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   }
 
   void _startNewAlertsCheckTimer() {
-    print('qqq  Starting periodic timer...');
     // Then check every 30 seconds
     _checkForNewAlerts();
     _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {

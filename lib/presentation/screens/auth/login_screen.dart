@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/presentation/providers/auth_provider.dart';
 import 'package:geoalert/presentation/widgets/custom_elevated_button.dart';
 import 'package:geoalert/presentation/widgets/custom_image.dart';
@@ -74,7 +75,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 child: Column(
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Padding(padding: const EdgeInsets.symmetric(horizontal: 57), child: CustomImage(height: 251, imageUrl: "assets/images/login.jpeg")),
+                    GestureDetector(
+                      onLongPress: () => showCustomInputDialog(context),
+                      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 57), child: CustomImage(height: 251, imageUrl: "assets/images/login.jpeg")),
+                    ),
                     Column(
                       children: [
                         Text("Welcome Back", style: TextStyle(color: Color.fromRGBO(25, 25, 25, 1), fontWeight: FontWeight.w700, fontSize: 28, fontFamily: 'Titillium Web')),
@@ -140,6 +144,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ],
                     ),
+
+                    // Spacer(),
                   ],
                 ),
               ),
@@ -147,6 +153,121 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  void showCustomInputDialog(BuildContext context) {
+    final TextEditingController hostController = TextEditingController();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: const Color.fromRGBO(249, 250, 251, 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 21),
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                // Async init block
+                Future.microtask(() async {
+                  final savedBaseUrl = await LocalStorage.instance.getBaseUrl();
+                  if (savedBaseUrl != null && savedBaseUrl.isNotEmpty) {
+                    final host = savedBaseUrl.replaceAll('http://', '').replaceAll(':7777', '');
+                    hostController.text = host;
+                    setState(() {}); // Trigger UI update
+                  }
+                });
+
+                hostController.addListener(() {
+                  setState(() {});
+                });
+
+                return SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: 120, child: Image.asset('assets/images/question-mark.png', fit: BoxFit.fill)),
+                      const SizedBox(height: 16),
+                      const Text('Set Base URL', style: TextStyle(fontFamily: 'Titillium Web', fontWeight: FontWeight.w700, fontSize: 21)),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: hostController,
+                        decoration: InputDecoration(
+                          prefixIcon:
+                              hostController.text.isNotEmpty
+                                  ? IconButton(
+                                    icon: const Icon(Icons.cancel),
+                                    onPressed: () {
+                                      hostController.clear();
+                                      setState(() {});
+                                    },
+                                  )
+                                  : null,
+                          labelText: 'Host',
+                          border: const OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // Cancel button
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          minimumSize: const Size(double.infinity, 0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Cancel', style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w400, fontSize: 18, color: Colors.white)),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Save base URL button
+                      AbsorbPointer(
+                        absorbing: hostController.text.isEmpty,
+
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final baseUrl = "http://${hostController.text.trim()}:7777";
+                            await LocalStorage.instance.setBaseUrl(baseUrl);
+                            Navigator.of(context).pop();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: hostController.text.isEmpty ? Colors.grey : Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            minimumSize: const Size(double.infinity, 0),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          child: const Text('Save', style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w400, fontSize: 18, color: Colors.black)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Clear base URL button
+                      ElevatedButton(
+                        onPressed: () async {
+                          await LocalStorage.instance.setBaseUrl('');
+                          hostController.clear();
+                          setState(() {});
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey[200],
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          minimumSize: const Size(double.infinity, 0),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Text('Clear Base URL', style: TextStyle(fontFamily: 'Space Grotesk', fontWeight: FontWeight.w400, fontSize: 18, color: Colors.black)),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -28,9 +28,13 @@ class ReplyNotifier extends StateNotifier<AsyncValue<Reply?>> {
   Future<void> fetchReply({required String alertId, required int userId, required int notificationId}) async {
     state = const AsyncValue.loading();
     try {
+      final key = _generateKey(alertId: alertId, userId: userId, notificationId: notificationId);
+      if (_replyCache.containsKey(key)) {
+        state = AsyncValue.data(_replyCache[key]);
+        return;
+      }
       final reply = await _getReplyUseCase.execute(alertId: alertId, userId: userId, notificationId: notificationId);
       state = AsyncValue.data(reply);
-      final key = _generateKey(alertId: alertId, userId: userId, notificationId: notificationId);
       if (reply != null) {
         _replyCache[key] = reply;
       } else {

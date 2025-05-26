@@ -5,4 +5,6 @@ class Routes {
   static const String home = "/home";
   static const String replyToAlert = "/reply-to-alert";
   static const String map = "/map";
+  static const String mapPicker = "/map-picker";
+  static const String viewReply = "/view-reply";
 }

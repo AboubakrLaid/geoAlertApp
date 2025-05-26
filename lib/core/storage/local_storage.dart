@@ -1,3 +1,4 @@
+import 'package:geolocator/geolocator.dart' as geo;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
@@ -65,5 +66,44 @@ class LocalStorage {
   Future<bool?> getUsingFakeCoordinates() async {
     await init();
     return _preferences?.getBool("using_fake_coordinates");
+  }
+
+  Future<void> setFakeCoordinates(double lat, double lng) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('fake_lat', lat);
+    await prefs.setDouble('fake_lng', lng);
+  }
+
+  Future<geo.Position?> getFakeCoordinates() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lat = prefs.getDouble('fake_lat') ?? 0.0;
+    final lng = prefs.getDouble('fake_lng') ?? 0.0;
+    if (lat != 0.0 && lng != 0.0) {
+      return geo.Position(
+        longitude: lng,
+        latitude: lat,
+        timestamp: DateTime.now(),
+        accuracy: 5.0,
+        altitude: 50.0,
+        altitudeAccuracy: 3.0,
+        heading: 0.0,
+        headingAccuracy: 0.1,
+        speed: 0.0,
+        speedAccuracy: 0.1,
+      );
+    }
+    return null;
+  }
+
+  // set base URL
+  Future<void> setBaseUrl(String url) async {
+    await init();
+    await _preferences?.setString("base_url", url);
+  }
+
+  // get base URL
+  Future<String?> getBaseUrl() async {
+    await init();
+    return _preferences?.getString("base_url");
   }
 }

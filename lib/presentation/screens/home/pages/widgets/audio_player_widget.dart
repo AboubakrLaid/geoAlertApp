@@ -178,6 +178,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             children: [
               // make the slider move smoothly
               Slider(
+                inactiveColor: Color.fromRGBO(220, 9, 26, 0.5),
                 min: 0,
                 max: _duration.inMilliseconds.toDouble(),
                 value: _position.inMilliseconds.toDouble(),

@@ -5,6 +5,8 @@ import 'package:geoalert/presentation/screens/auth/register_screen.dart';
 import 'package:geoalert/presentation/screens/confirm-email/confirm_email_screen.dart';
 import 'package:geoalert/presentation/screens/home/home_screen.dart';
 import 'package:geoalert/presentation/screens/home/pages/widgets/reply_to_alert_screen.dart';
+import 'package:geoalert/presentation/screens/home/pages/widgets/view_reply_screen.dart';
+import 'package:geoalert/presentation/widgets/map_picker_screen.dart';
 import 'package:geoalert/presentation/widgets/map_widget.dart';
 import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
@@ -60,6 +62,20 @@ class AppRouter {
           builder: (context, state) {
             final alert = state.extra as Alert;
             return MapWidget(alert: alert);
+          },
+        ),
+
+        GoRoute(
+          path: Routes.mapPicker,
+          builder: (context, state) {
+            return MapPickerScreen();
+          },
+        ),
+        GoRoute(
+          path: Routes.viewReply,
+          builder: (context, state) {
+            final alert = state.extra as Alert;
+            return ViewReplyScreen(alert: alert);
           },
         ),
       ],

@@ -55,7 +55,13 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
         await _waveController.stopRecording();
         _timer?.cancel();
       } else {
-        await _waveController.startRecording();
+        try {
+          await _waveController.startRecording();
+        } catch (e) {
+          CustomSnackBar.show(context, message: "Something went wrong while starting the recording. Please try again.", backgroundColor: const Color.fromRGBO(220, 9, 26, 1));
+          return;
+        }
+        await Future.delayed(Duration(milliseconds: 200));
         setState(() {
           _isRecording = true;
           _isRecordingFinished = false;

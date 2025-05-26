@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geoalert/presentation/screens/home/pages/widgets/alert_dialogue.dart';
+import 'package:geoalert/presentation/screens/home/pages/widgets/expandable_text.dart';
 import 'package:geoalert/presentation/widgets/custom_snack_bar.dart';
 import 'package:geoalert/routes/routes.dart';
 import 'package:go_router/go_router.dart';
@@ -17,135 +18,89 @@ class AlertCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 32),
-      child: InkWell(
-        onTap: () {
-          // showDialog(context: context, builder: (context) => AlertDetailDialog(alert: alert));
-          showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent, // Needed to create custom barrier and full height sheet
-            builder: (context) {
-              return SafeArea(
-                child: Stack(
-                  children: [
-                    // Dismiss barrier on top
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: Container(
-                        height: MediaQuery.of(context).size.height * 0.2, // Height of the dismissible area
-                        color: Colors.transparent,
-                      ),
-                    ),
-                    // Bottom Sheet content
-                    DraggableScrollableSheet(
-                      initialChildSize: 1,
-                      minChildSize: 0.5,
-                      maxChildSize: 1.0,
-                      builder: (_, controller) {
-                        return Container(
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                          child: SingleChildScrollView(controller: controller, child: AlertDetailDialog(alert: alert)),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              );
-            },
-          );
-        },
+      child: SizedBox(
+        width: double.infinity,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    // if (alert.beenRepliedTo) ...[Icon(Icons.check_circle, color: Color(0xFF22A447), size: 20), SizedBox(width: 8)],
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width * 0.35,
-                      child: Text(
-                        alert.title,
-                        style: const TextStyle(fontFamily: "TittilumWeb", fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF252525)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-
-                if (alert.date != null)
-                  Text(
-                    Jiffy.parseFromDateTime(alert.date!).format(pattern: 'MMM dd, yyyy'),
-                    style: const TextStyle(fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFFA9A9A9)),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: [_buildTag(text: alert.dangerType.toUpperCase()), _buildTag(text: alert.severity.value.toUpperCase(), textColor: _getSeverityTextColor(alert.severity))],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Vertical Divider
-                Container(
-                  width: 4,
-                  height: 60,
-                  margin: const EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD9D9D9), // rgba(217, 217, 217, 1)
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                // Alert Body Text
-                Expanded(
-                  child: Text(
-                    alert.body,
-                    style: const TextStyle(fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF252525)),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
+                if (alert.isExpired) _buildTag(text: 'EXPIRED', textColor: const Color(0xFFDC091A), icon: Icons.hourglass_bottom),
+                _buildTag(text: alert.dangerType.toUpperCase()),
+                _buildTag(text: alert.severity.value.toUpperCase(), textColor: _getSeverityTextColor(alert.severity)),
               ],
             ),
-            if (!alert.beenRepliedTo) ...[
-              const SizedBox(height: 16),
-              Tooltip(
-                message: alert.isExpired ? 'This alert has expired' : 'Respond this alert',
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: alert.isExpired ? const Color(0xFFD9D9D9) : const Color.fromRGBO(220, 9, 26, 1),
-                    padding: const EdgeInsets.all(8),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+
+            const SizedBox(height: 8),
+
+            if (alert.date != null)
+              // format is MMM dd, yyyy at hh:mm
+              Text(
+                Jiffy.parseFromDateTime(alert.date!).format(pattern: 'MMM dd, yyyy At HH:mm'),
+                style: const TextStyle(fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFFA9A9A9)),
+              ),
+            const SizedBox(height: 8),
+            Text(alert.title, style: const TextStyle(fontFamily: "TittilumWeb", fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF252525)), maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 12),
+            // Text(alert.body, style: const TextStyle(fontFamily: 'Space Grotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF252525)), maxLines: 3, overflow: TextOverflow.ellipsis),
+            ExpandableText(text: alert.body),
+
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                if (!alert.beenRepliedTo && !alert.isExpired)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: alert.isExpired ? const Color(0xFFD9D9D9) : const Color.fromRGBO(220, 9, 26, 1),
+                      padding: const EdgeInsets.all(8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    ),
+
+                    onPressed: () {
+                      GoRouter.of(context).push(Routes.replyToAlert, extra: alert);
+                    },
+                    child: const Text('Acknowledge', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
                   ),
 
-                  onPressed: () {
-                    if (alert.isExpired) {
-                      CustomSnackBar.show(context, message: 'This alert has expired', backgroundColor: const Color.fromRGBO(220, 9, 26, 1));
-                      return;
-                    }
-                    GoRouter.of(context).push(Routes.replyToAlert, extra: alert);
-                  },
-                  child: const Text('Acknowledge', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Colors.white)),
-                ),
-              ),
-            ],
+                if (alert.beenRepliedTo)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: const EdgeInsets.all(8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                    onPressed: () {
+                      GoRouter.of(context).push(Routes.viewReply, extra: alert);
+                    },
+                    child: const Text('View Reply', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Color.fromRGBO(37, 37, 37, 1))),
+                  ),
+                if (!alert.isExpired)
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white, padding: const EdgeInsets.all(8), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+                    onPressed: () {
+                      GoRouter.of(context).push(Routes.map, extra: alert);
+                    },
+                    child: const Text('View Map', style: TextStyle(fontFamily: 'SpaceGrotesk', fontSize: 14, fontWeight: FontWeight.w400, color: Color.fromRGBO(37, 37, 37, 1))),
+                  ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTag({required String text, Color? textColor}) {
+  Widget _buildTag({required String text, Color? textColor, IconData? icon}) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4), border: Border.all(color: const Color.fromRGBO(217, 217, 217, 1))),
-      child: Text(text, style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: FontWeight.w500, color: textColor ?? const Color(0xFF252525))),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[Icon(icon, size: 12, color: textColor ?? const Color(0xFF252525)), const SizedBox(width: 2)],
+          Text(text, style: TextStyle(fontFamily: 'Space Grotesk', fontSize: 12, fontWeight: FontWeight.w500, color: textColor ?? const Color(0xFF252525))),
+        ],
+      ),
     );
   }
 

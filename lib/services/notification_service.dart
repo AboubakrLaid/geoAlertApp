@@ -98,7 +98,12 @@ class NotificationService {
 
   Future<void> _setupMessageHandlers() async {
     //foreground message
+    final accessToken = await LocalStorage.instance.getAccessToken();
     FirebaseMessaging.onMessage.listen((message) {
+      if (accessToken == null) {
+        print('No access token found, skipping notification');
+        return;
+      }
       showNotification(message);
     });
 

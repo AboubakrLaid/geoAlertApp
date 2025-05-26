@@ -25,17 +25,23 @@ class ZoneNotifier extends StateNotifier<AsyncValue<Zzone?>> {
 
   ZoneNotifier(this._getZoneUseCase) : super(const AsyncValue.data(null));
 
-  bool hasFetched = false;
+  Map<String, Zzone> zoneCache = {};
 
   Future<void> fetchZone({required String idAlert}) async {
     state = const AsyncValue.loading();
     try {
+      if (zoneCache.containsKey((idAlert))) {
+        state = AsyncValue.data(zoneCache[idAlert]);
+        return;
+      }
       final zone = await _getZoneUseCase.getZone(idAlert: idAlert);
       state = AsyncValue.data(zone);
-      hasFetched = true;
+      if (zone != null) {
+        zoneCache[idAlert] = zone;
+      }
     } catch (e, stackTrace) {
       state = AsyncValue.error(e.toString(), stackTrace);
-      hasFetched = false;
+      zoneCache.remove(idAlert);
     }
   }
 }
@@ -45,17 +51,19 @@ class ZonesNotifier extends StateNotifier<AsyncValue<List<Zzone>>> {
 
   ZonesNotifier(this._getZoneUseCase) : super(const AsyncValue.data([]));
 
-  bool hasFetched = false;
+  // bool hasFetched = false;
 
   Future<void> fetchZones() async {
     state = const AsyncValue.loading();
     try {
       final zones = await _getZoneUseCase.getZones();
       state = AsyncValue.data(zones);
-      hasFetched = true;
+      // hasFetched = true;
     } catch (e, stackTrace) {
       state = AsyncValue.error(e.toString(), stackTrace);
-      hasFetched = false;
+      // hasFetched = false;
     }
   }
 }
+
+// generate key for zone

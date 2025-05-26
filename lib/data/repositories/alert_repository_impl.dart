@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/network/exception_handler.dart';
+import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/data/models/alert_model.dart';
 import 'package:geoalert/domain/entities/alert.dart';
 import 'package:geoalert/domain/entities/reply.dart';
@@ -14,7 +15,9 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<List<Alert>> getAlerts() async {
     try {
-      final response = await _apiClient.get('/ms-notification/api/notification/');
+      final userId = await LocalStorage.instance.getUserId();
+      final response = await _apiClient.get('/ms-notification/api/notification/$userId/');
+      print('Response data: ${response.data}');
       List<Alert> alerts = [];
       for (var json in response.data) {
         alerts.add(AlertModel.fromJson(json));
@@ -58,7 +61,8 @@ class AlertRepositoryImpl implements AlertRepository {
   @override
   Future<bool> checkForNewAlerts({required String lastCheckedDate}) async {
     try {
-      final url = '/ms-notification/api/check-new-notifications/?last_checked=$lastCheckedDate';
+      final userId = await LocalStorage.instance.getUserId();
+      final url = '/ms-notification/api/check-new-notifications/$userId/?last_checked=$lastCheckedDate';
       final response = await _apiClient.get(url, requireAuth: true);
       return response.data['has_new_notifications'] ?? false;
     } catch (e) {

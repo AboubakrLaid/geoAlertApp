@@ -43,7 +43,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           .whenComplete(() {
             final bool registerSucceded = !ref.read(authNotifierProvider).hasError;
             if (registerSucceded) {
-              GoRouter.of(context).go(Routes.confirmEmail, extra: email);
+              GoRouter.of(context).push(Routes.confirmEmail, extra: email);
             }
           });
     }

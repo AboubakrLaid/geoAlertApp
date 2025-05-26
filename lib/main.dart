@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geoalert/config/app_config.dart';
 import 'package:geoalert/config/app_theme.dart';
 import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
@@ -19,26 +20,17 @@ import 'package:geoalert/firebase_options.dart';
 import 'package:geoalert/presentation/util/dialog_util.dart';
 import 'package:geoalert/presentation/util/location_service_listener.dart';
 import 'package:geoalert/routes/app_router.dart';
+// import 'package:geoalert/services/am_i_safe_service.dart';
 import 'package:geoalert/services/notification_service.dart';
 import 'package:jiffy/jiffy.dart';
 import 'package:permission_handler/permission_handler.dart' as perm;
 import 'package:geolocator/geolocator.dart' as geo;
+import 'package:toastification/toastification.dart';
 import 'routes/routes.dart';
 
-Future<geo.Position> getFakeCoordinates() async {
-  return geo.Position(
-    longitude: 3.0588, // Example: Algiers longitude
-    latitude: 36.7538, // Example: Algiers latitude
-    timestamp: DateTime.now(),
-    accuracy: 5.0, // Low inaccuracy (ideal for testing)
-    altitude: 50.0, // Reasonable altitude
-    altitudeAccuracy: 3.0, // Optional; could be null if not needed
-    heading: 0.0, // Heading angle in degrees
-    headingAccuracy: 0.1, // Optional
-    speed: 0.0, // Not moving
-    speedAccuracy: 0.1, // Low speed error margin
-  );
-}
+final resetAppProvider = Provider<VoidCallback>((ref) {
+  throw UnimplementedError('Must be overridden in ProviderScope');
+});
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -97,10 +89,11 @@ void onStart(ServiceInstance service) async {
       // print("Srv getting location for user: $userId");
       // 2. Execute parallel operations with timeouts
       final results = await Future.wait([
-        isUsingFakeCoordinates ? getFakeCoordinates() : geoLocator.getCurrentPosition(locationSettings: geo.LocationSettings(accuracy: geo.LocationAccuracy.best)),
+        isUsingFakeCoordinates ? LocalStorage.instance.getFakeCoordinates() : geoLocator.getCurrentPosition(locationSettings: geo.LocationSettings(accuracy: geo.LocationAccuracy.best)),
         getFrequencyUseCase.execute().timeout(Duration(seconds: 10)),
       ]);
       final position = results[0] as geo.Position;
+      print("Position: ${position.latitude}, ${position.longitude}");
       final settings = results[1] as LocationUpdateSettings?;
       final frequency = settings?.frequency ?? 10;
 
@@ -171,7 +164,13 @@ void main() async {
 
   print("Access Token: $accessToken");
 
-  runApp(const ProviderScope(child: MyApp()));
+  final baseUrl = await LocalStorage.instance.getBaseUrl();
+  if (baseUrl != null && baseUrl.isNotEmpty) {
+    AppConfig.baseUrl = baseUrl;
+  }
+  print("Base URL: ${AppConfig.baseUrl}");
+
+  runApp(MyApp());
 }
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -287,27 +286,41 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     }
   }
 
+  Key _providerScopeKey = UniqueKey();
+
+  void _resetAppState() {
+    setState(() {
+      _providerScopeKey = UniqueKey(); // rebuilds ProviderScope
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      navigatorKey: navigatorKey,
-      theme: ThemeConfig.themeData,
-      home: Builder(
-        builder:
-            (context) => FutureBuilder<String>(
-              future: _initializeApp(context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(body: Center(child: CircularProgressIndicator()));
-                } else if (snapshot.hasError) {
-                  return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
-                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                  return MaterialApp.router(debugShowCheckedModeBanner: false, theme: ThemeConfig.themeData, routerConfig: AppRouter(initialLocation: snapshot.data!).router);
-                }
-                return const SizedBox(); // fallback
-              },
-            ),
+    return ProviderScope(
+      key: _providerScopeKey,
+      overrides: [resetAppProvider.overrideWithValue(_resetAppState)],
+      child: ToastificationWrapper(
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          navigatorKey: navigatorKey,
+          theme: ThemeConfig.themeData,
+          home: Builder(
+            builder:
+                (context) => FutureBuilder<String>(
+                  future: _initializeApp(context),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+                    } else if (snapshot.hasError) {
+                      return Scaffold(body: Center(child: Text("Error: ${snapshot.error}")));
+                    } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return MaterialApp.router(debugShowCheckedModeBanner: false, theme: ThemeConfig.themeData, routerConfig: AppRouter(initialLocation: snapshot.data!).router);
+                    }
+                    return const SizedBox(); // fallback
+                  },
+                ),
+          ),
+        ),
       ),
     );
   }
