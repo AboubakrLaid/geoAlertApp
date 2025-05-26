@@ -10,6 +10,7 @@ class Alert {
   final String dangerType;
   final DateTime? date;
   final bool isExpired;
+  final bool isDisabled;
 
   Alert({
     required this.id,
@@ -23,6 +24,7 @@ class Alert {
     required this.severity,
     required this.dangerType,
     required this.isExpired,
+    required this.isDisabled,
   });
 
   Alert copyWith({
@@ -37,6 +39,7 @@ class Alert {
     String? dangerType,
     DateTime? date,
     bool? isExpired,
+    bool? isDisabled,
   }) {
     return Alert(
       id: id ?? this.id,
@@ -50,6 +53,7 @@ class Alert {
       dangerType: dangerType ?? this.dangerType,
       date: date ?? this.date,
       isExpired: isExpired ?? this.isExpired,
+      isDisabled: isDisabled ?? this.isDisabled,
     );
   }
 }

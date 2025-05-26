@@ -28,6 +28,7 @@ class AlertCard extends StatelessWidget {
               runSpacing: 8,
               children: [
                 if (alert.isExpired) _buildTag(text: 'EXPIRED', textColor: const Color(0xFFDC091A), icon: Icons.hourglass_bottom),
+                if (alert.isDisabled) _buildTag(text: 'DISABLED', textColor: const Color(0xFFDC091A), icon: Icons.block),
                 _buildTag(text: alert.dangerType.toUpperCase()),
                 _buildTag(text: alert.severity.value.toUpperCase(), textColor: _getSeverityTextColor(alert.severity)),
               ],
@@ -52,7 +53,7 @@ class AlertCard extends StatelessWidget {
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (!alert.beenRepliedTo && !alert.isExpired)
+                if (!alert.beenRepliedTo && !alert.isExpired && !alert.isDisabled)
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: alert.isExpired ? const Color(0xFFD9D9D9) : const Color.fromRGBO(220, 9, 26, 1),

@@ -176,6 +176,8 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
             if (replyState.error.toString().toLowerCase().contains("notification is expired")) {
               final alertIsExpired = widget.alert.copyWith(isExpired: true);
               ref.read(alertProvider.notifier).updateAlert(alertIsExpired);
+            } else if (replyState.error.toString().toLowerCase().contains("notification is disabled")) {
+              ref.read(alertProvider.notifier).disableAlerts(alertId: alertId);
             }
           } else {
             // update the alert state (beenRepliedTo set to true)

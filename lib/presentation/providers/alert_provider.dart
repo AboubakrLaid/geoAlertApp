@@ -58,6 +58,19 @@ class AlertNotifier extends StateNotifier<AsyncValue<List<Alert>>> {
     state = AsyncValue.data(updatedAlerts);
     print("Updated alert: ${updatedAlert.title}");
   }
+
+  void disableAlerts({required String alertId}) {
+    final currentAlerts = state.value ?? [];
+    final updatedAlerts =
+        currentAlerts.map((alert) {
+          if (alert.id == alertId && !alert.beenRepliedTo) {
+            return alert.copyWith(isDisabled: true);
+          }
+          return alert;
+        }).toList();
+    state = AsyncValue.data(updatedAlerts);
+    print("Disabled alert with ID: $alertId");
+  }
 }
 
 // Reply Notifier
