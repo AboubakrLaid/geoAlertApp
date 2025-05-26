@@ -62,6 +62,12 @@ void onStart(ServiceInstance service) async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
+  final baseUrl = await LocalStorage.instance.getBaseUrl();
+  if (baseUrl != null && baseUrl.isNotEmpty) {
+    AppConfig.baseUrl = baseUrl;
+    print("Service using updated base URL: $baseUrl");
+  }
+
   final apiClient = ApiClient();
   final repository = LocationUpdateSettingsRepositoryImpl(apiClient);
   final getFrequencyUseCase = GetLocationUpdateSettingsUseCase(repository);
@@ -154,6 +160,10 @@ Future<bool> onIosBackground(ServiceInstance service) async {
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final accessToken = await LocalStorage.instance.getAccessToken();
+  final baseUrl = await LocalStorage.instance.getBaseUrl();
+  if (baseUrl != null && baseUrl.isNotEmpty) {
+    AppConfig.baseUrl = baseUrl;
+  }
 
   if (accessToken != null && accessToken.isNotEmpty) {
     await initializeService();
@@ -164,10 +174,6 @@ void main() async {
 
   print("Access Token: $accessToken");
 
-  final baseUrl = await LocalStorage.instance.getBaseUrl();
-  if (baseUrl != null && baseUrl.isNotEmpty) {
-    AppConfig.baseUrl = baseUrl;
-  }
   print("Base URL: ${AppConfig.baseUrl}");
 
   runApp(MyApp());
