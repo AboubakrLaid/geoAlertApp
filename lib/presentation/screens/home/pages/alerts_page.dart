@@ -22,7 +22,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   @override
   void initState() {
     super.initState();
-    print('qqq  Initializing AlertsPage');
     _newAlertsCheckTimer = null;
     _isCheckingForNewAlerts = false;
     _hasNewAlerts = false;
@@ -67,7 +66,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   void _startNewAlertsCheckTimer() {
     // Then check every 30 seconds
     _checkForNewAlerts();
-    _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _newAlertsCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       _checkForNewAlerts();
     });
   }
@@ -86,10 +85,9 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
     if (_isCheckingForNewAlerts) return;
 
     _isCheckingForNewAlerts = true;
-    print('qqq  Checking for new alerts...');
+    // print('qqq  Checking for new alerts...');
     try {
-      final alertsNotifier = ref.read(alertProvider.notifier);
-      final alerts = alertsNotifier.state.valueOrNull;
+      final alerts = ref.read(alertProvider).valueOrNull;
 
       if (alerts == null || alerts.isEmpty) {
         return;
@@ -102,7 +100,6 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
         final hasNewAlerts = await notifier.checkNewNotifications(lastCheckedDate: lastAlertDate);
 
         if (hasNewAlerts && mounted) {
-          print('qqq  got new alerts');
           _hasNewAlerts = true;
         }
       }

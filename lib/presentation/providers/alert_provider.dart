@@ -90,6 +90,10 @@ class ReplyToAlertNotifier extends StateNotifier<AsyncValue<void>> {
       state = AsyncValue.error(e.toString(), stackTrace);
     }
   }
+
+  void resetState() {
+    state = const AsyncValue.data(null);
+  }
 }
 
 final checkNewNotificationsProvider = StateNotifierProvider<CheckNewNotificationsNotifier, AsyncValue<bool>>((ref) => CheckNewNotificationsNotifier(ref.read(newNotificationUseCaseProvider)));

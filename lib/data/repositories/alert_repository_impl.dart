@@ -34,9 +34,6 @@ class AlertRepositoryImpl implements AlertRepository {
 
   @override
   Future<void> replyToAlert({required Reply reply}) async {
-    print("reply ${reply.text}");
-    print(reply.audioFilePath);
-
     try {
       // /ms-notification/api/reply
       FormData formData = FormData.fromMap({

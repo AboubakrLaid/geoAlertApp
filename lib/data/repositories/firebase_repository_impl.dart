@@ -11,10 +11,8 @@ class FireBaseRepositoryImpl implements FirebaseRepository {
     try {
       // Simulate a network delay
       await _apiClient.post('/ms-notification/api/devices/', {'token': token, 'user_id': userId});
-      print('Registering FCM token: $token');
     } catch (e) {
       // Handle exceptions if needed
-      print('Error registering FCM token: $e');
       handleApiException(e);
     }
   }
