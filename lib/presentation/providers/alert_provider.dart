@@ -38,17 +38,58 @@ class AlertNotifier extends StateNotifier<AsyncValue<List<Alert>>> {
 
   AlertNotifier(this._getAlertsUseCase) : super(const AsyncValue.data([]));
 
-  bool hasFetched = false;
+  bool _hasFetched = false;
+  bool get hasFetched => _hasFetched;
+
+  String? _nextPageUrl;
+  bool get hasNextPage => _nextPageUrl != null;
 
   Future<void> fetchAlerts() async {
     state = const AsyncValue.loading();
     try {
-      final alerts = await _getAlertsUseCase.execute();
-      state = AsyncValue.data(alerts);
-      hasFetched = true;
+      final paginatedAlerts = await _getAlertsUseCase.execute();
+      state = AsyncValue.data(paginatedAlerts?.alerts ?? []);
+      _nextPageUrl = paginatedAlerts?.nextPageUrl;
+      _hasFetched = true;
     } catch (e, stackTrace) {
       state = AsyncValue.error(e.toString(), stackTrace);
-      hasFetched = false;
+      _hasFetched = false;
+    }
+  }
+
+  Future<void> getNewstAlerts() async {
+    final currentAlerts = state.value ?? [];
+    final afterDate = currentAlerts.isNotEmpty ? currentAlerts.first.date?.toIso8601String() : null;
+    // state = const AsyncValue.loading();
+    try {
+      // afterDate is the date of the most recent alert
+      final paginatedAlerts = await _getAlertsUseCase.execute(afterDate: afterDate);
+      final newAlerts = paginatedAlerts?.alerts ?? [];
+
+      final merged = [...newAlerts, ...currentAlerts];
+      final uniqueAlerts =
+          {
+            for (var alert in merged) alert.id: alert,
+          }.values.toList(); // Uses map to remove duplicates by ID
+
+      state = AsyncValue.data(uniqueAlerts);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e.toString(), stackTrace);
+    }
+  }
+
+  Future<void> fetchMoreAlerts() async {
+    if (_nextPageUrl == null) return;
+    try {
+      final paginatedAlerts = await _getAlertsUseCase.execute(nextPageUrl: _nextPageUrl);
+      if (paginatedAlerts != null) {
+        final currentAlerts = state.value ?? [];
+        final newAlerts = paginatedAlerts.alerts;
+        state = AsyncValue.data([...currentAlerts, ...newAlerts]);
+        _nextPageUrl = paginatedAlerts.nextPageUrl;
+      }
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e.toString(), stackTrace);
     }
   }
 
@@ -56,20 +97,18 @@ class AlertNotifier extends StateNotifier<AsyncValue<List<Alert>>> {
     final currentAlerts = state.value ?? [];
     final updatedAlerts = currentAlerts.map((alert) => alert.id == updatedAlert.id ? updatedAlert : alert).toList();
     state = AsyncValue.data(updatedAlerts);
-    print("Updated alert: ${updatedAlert.title}");
   }
 
   void disableAlerts({required String alertId}) {
     final currentAlerts = state.value ?? [];
     final updatedAlerts =
         currentAlerts.map((alert) {
-          if (alert.id == alertId && !alert.beenRepliedTo) {
+          if (alertId == alert.id.toString() && !alert.beenRepliedTo) {
             return alert.copyWith(isDisabled: true);
           }
           return alert;
         }).toList();
     state = AsyncValue.data(updatedAlerts);
-    print("Disabled alert with ID: $alertId");
   }
 }
 
@@ -115,3 +154,21 @@ class CheckNewNotificationsNotifier extends StateNotifier<AsyncValue<bool>> {
     }
   }
 }
+
+// final getNewAlertsProvider = StateNotifierProvider<GetNewAlertsNotifier, AsyncValue<List<Alert>>>((ref) => GetNewAlertsNotifier(ref.read(getNewAlertsUseCaseProvider)));
+
+// class GetNewAlertsNotifier extends StateNotifier<AsyncValue<List<Alert>>> {
+//   final GetNewAlertsUseCase _getNewAlertsUseCase;
+
+//   GetNewAlertsNotifier(this._getNewAlertsUseCase) : super(const AsyncValue.data([]));
+
+//   Future<void> fetchNewAlerts(String afterDate) async {
+//     state = const AsyncValue.loading();
+//     try {
+//       final newAlerts = await _getNewAlertsUseCase.execute(afterDate: afterDate);
+//       state = AsyncValue.data(newAlerts);
+//     } catch (e, stackTrace) {
+//       state = AsyncValue.error(e.toString(), stackTrace);
+//     }
+//   }
+// }

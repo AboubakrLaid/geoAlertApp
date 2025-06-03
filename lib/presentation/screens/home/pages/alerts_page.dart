@@ -97,11 +97,10 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
       final lastAlertDate = alerts.first.date?.toIso8601String();
       if (lastAlertDate != null) {
         final notifier = ref.read(checkNewNotificationsProvider.notifier);
-        final hasNewAlerts = await notifier.checkNewNotifications(lastCheckedDate: lastAlertDate);
-
-        if (hasNewAlerts && mounted) {
-          _hasNewAlerts = true;
-        }
+        await notifier.checkNewNotifications(lastCheckedDate: lastAlertDate);
+        // if (hasNewAlerts && mounted) {
+        //   _hasNewAlerts = true;
+        // }
       }
     } finally {
       _isCheckingForNewAlerts = false;
@@ -112,11 +111,14 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
   Widget build(BuildContext context) {
     super.build(context);
     final alertState = ref.watch(alertProvider);
-    final newAlertsState = ref.watch(checkNewNotificationsProvider);
+
+    final alertsNotifier = ref.read(alertProvider.notifier);
 
     ref.listen<AsyncValue<bool>>(checkNewNotificationsProvider, (previous, next) {
       if (next is AsyncData<bool>) {
-        _hasNewAlerts = next.value;
+        setState(() {
+          _hasNewAlerts = next.value;
+        });
       }
     });
 
@@ -126,7 +128,7 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
         children: [
           RefreshIndicator(
             onRefresh: () async {
-              await ref.read(alertProvider.notifier).fetchAlerts();
+              // await ref.read(alertProvider.notifier).fetchAlerts();
               await _checkForNewAlerts();
             },
             child: CustomScrollView(
@@ -139,15 +141,45 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
                         return SliverFillRemaining(child: NoAlertWidget());
                       }
                       return SliverList(
-                        delegate: SliverChildBuilderDelegate((context, index) {
-                          final alert = alerts[index];
-                          return Column(
-                            children: [
-                              AlertCard(alert: alert),
-                              if (index < alerts.length - 1) Column(children: [SizedBox(height: 16), const Divider(height: 1, thickness: 1, color: Color(0xFFD0D5DD)), SizedBox(height: 16)]),
-                            ],
-                          );
-                        }, childCount: alerts.length),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            // Check if we're at the "Load More" button index
+                            if (index == alerts.length && alertsNotifier.hasNextPage) {
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      alertsNotifier.fetchMoreAlerts(); // Make sure this method is implemented
+                                    },
+                                    child: const Text('Load More'),
+                                  ),
+                                ),
+                              );
+                            }
+
+                            // Regular alert item
+                            final alert = alerts[index];
+                            return Column(
+                              children: [
+                                AlertCard(alert: alert),
+                                if (index < alerts.length - 1)
+                                  Column(
+                                    children: [
+                                      SizedBox(height: 16),
+                                      const Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: Color(0xFFD0D5DD),
+                                      ),
+                                      SizedBox(height: 16),
+                                    ],
+                                  ),
+                              ],
+                            );
+                          },
+                          childCount: alerts.length + (alertsNotifier.hasNextPage ? 1 : 0),
+                        ),
                       );
                     },
                     loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
@@ -179,8 +211,10 @@ class _AlertsPageState extends ConsumerState<AlertsPage> with AutomaticKeepAlive
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                 ),
                 onPressed: () {
-                  ref.read(alertProvider.notifier).fetchAlerts();
-                  _hasNewAlerts = false;
+                  setState(() {
+                    _hasNewAlerts = false;
+                  });
+                  alertsNotifier.getNewstAlerts();
                 },
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

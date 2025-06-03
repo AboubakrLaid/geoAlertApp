@@ -3,7 +3,9 @@ import 'package:geoalert/core/network/api_client.dart';
 import 'package:geoalert/core/network/exception_handler.dart';
 import 'package:geoalert/core/storage/local_storage.dart';
 import 'package:geoalert/data/models/alert_model.dart';
+import 'package:geoalert/data/models/paginated_alerts_model.dart';
 import 'package:geoalert/domain/entities/alert.dart';
+import 'package:geoalert/domain/entities/paginated_alerts.dart';
 import 'package:geoalert/domain/entities/reply.dart';
 import 'package:geoalert/domain/repositories/alert_repository.dart';
 
@@ -13,23 +15,16 @@ class AlertRepositoryImpl implements AlertRepository {
   AlertRepositoryImpl(this._apiClient);
 
   @override
-  Future<List<Alert>> getAlerts() async {
+  Future<PaginatedAlerts?> getAlerts({String? nextPageUrl, String? afterDate}) async {
     try {
       final userId = await LocalStorage.instance.getUserId();
-      final response = await _apiClient.get('/ms-notification/api/notification/$userId/');
-      print('Response data: ${response.data}');
-      List<Alert> alerts = [];
-      for (var json in response.data) {
-        alerts.add(AlertModel.fromJson(json));
-      }
-      if (alerts.isNotEmpty) {
-        alerts.sort((a, b) => b.date!.compareTo(a.date!));
-      }
-      return alerts;
+      final String url = nextPageUrl ?? (afterDate != null ? '/ms-notification/api/notification/$userId/?$afterDate' : '/ms-notification/api/notification/$userId/');
+      final response = await _apiClient.get(url, requireAuth: true);
+      return PaginatedAlertsModel.fromJson(response.data);
     } catch (e) {
       handleApiException(e);
-      return []; // fallback
     }
+    return null;
   }
 
   @override
@@ -46,10 +41,6 @@ class AlertRepositoryImpl implements AlertRepository {
       });
       // Simulate a network delay
       final response = await _apiClient.post('/ms-notification/api/reply/', formData);
-      print('Reply sent: ${response.data}');
-      // Here you would typically send the reply to the server
-      // For this example, we'll just print it
-      print('Reply sent: ${reply.text}');
     } catch (e) {
       handleApiException(e);
     }

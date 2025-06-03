@@ -34,6 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         if (loginSucceded) {
           GoRouter.of(context).go(Routes.home);
         } else {
+          _passwordController.clear();
           final errorMessage = ref.read(authNotifierProvider).error.toString().toLowerCase();
           CustomSnackBar.show(context, message: errorMessage);
           if (errorMessage.contains("please verify your email before logging in".toLowerCase())) {
@@ -190,21 +191,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       SizedBox(height: 120, child: Image.asset('assets/images/question-mark.png', fit: BoxFit.fill)),
                       const SizedBox(height: 16),
-                      const Text('Set Base URL', style: TextStyle(fontFamily: 'Titillium Web', fontWeight: FontWeight.w700, fontSize: 21)),
+                      const Text('Set Base URL', style: TextStyle(fontFamily: 'Titillium Web', fontWeight: FontWeight.w700, fontSize: 21,)),
                       const SizedBox(height: 16),
                       TextField(
                         controller: hostController,
                         decoration: InputDecoration(
-                          prefixIcon:
-                              hostController.text.isNotEmpty
-                                  ? IconButton(
-                                    icon: const Icon(Icons.cancel),
-                                    onPressed: () {
-                                      hostController.clear();
-                                      setState(() {});
-                                    },
-                                  )
-                                  : null,
+                          // prefixIcon:
+                          //     hostController.text.isNotEmpty
+                          //         ? IconButton(
+                          //           icon: const Icon(Icons.cancel),
+                          //           onPressed: () {
+                          //             hostController.clear();
+                          //             setState(() {});
+                          //           },
+                          //         )
+                          //         : null,
                           labelText: 'Host',
                           border: const OutlineInputBorder(),
                         ),

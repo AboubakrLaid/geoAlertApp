@@ -24,7 +24,6 @@ class ReplyToAlertScreen extends ConsumerStatefulWidget {
 class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
   // used to play the audio
   bool _isPlaying = false;
-  final int _timeLeft = 0;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
 
@@ -97,7 +96,7 @@ class _ReplyToAlertScreenState extends ConsumerState<ReplyToAlertScreen> {
         _totalDuration = Duration(seconds: _seconds);
       });
       _timer?.cancel();
-      final file = _waveController.file;
+      _waveController.file;
     }
   }
 

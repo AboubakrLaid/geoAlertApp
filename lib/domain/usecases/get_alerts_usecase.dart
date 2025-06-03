@@ -1,4 +1,4 @@
-import 'package:geoalert/domain/entities/alert.dart';
+import 'package:geoalert/domain/entities/paginated_alerts.dart';
 import 'package:geoalert/domain/repositories/alert_repository.dart';
 
 class GetAlertsUseCase {
@@ -6,7 +6,7 @@ class GetAlertsUseCase {
 
   GetAlertsUseCase(this.repository);
 
-  Future<List<Alert>> execute() {
-    return repository.getAlerts();
+  Future<PaginatedAlerts?> execute({String? nextPageUrl, String? afterDate}) {
+    return repository.getAlerts(nextPageUrl: nextPageUrl, afterDate: afterDate);
   }
 }
